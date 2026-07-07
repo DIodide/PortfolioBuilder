@@ -1,3 +1,6 @@
 [submodule "content/portfolio"]
 	path = content/portfolio
 	url = https://github.com/DIodide/portfolio.git
+[submodule "content/thoughts"]
+	path = content/thoughts
+	url = https://github.com/DIodide/thoughts.git
