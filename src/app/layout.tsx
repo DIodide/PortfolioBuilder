@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import LinkGuard from "@/components/LinkGuard";
 import MuxController from "@/components/MuxController";
@@ -14,6 +15,27 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Geist Pixel ships one weight per shape variant (SIL OFL, see src/fonts/).
+// Line carries the masthead, Square the sidebar wordmark; Iosevka is the
+// bio-pane prose voice.
+const pixelLine = localFont({
+  src: "../fonts/GeistPixel-Line.woff2",
+  variable: "--font-pixel-line",
+  weight: "400",
+});
+
+const pixelSquare = localFont({
+  src: "../fonts/GeistPixel-Square.woff2",
+  variable: "--font-pixel-square",
+  weight: "400",
+});
+
+const iosevka = localFont({
+  src: "../fonts/iosevka-latin-400-normal.woff2",
+  variable: "--font-iosevka",
+  weight: "400",
 });
 
 const SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -50,7 +72,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${pixelLine.variable} ${pixelSquare.variable} ${iosevka.variable} antialiased`}
     >
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />

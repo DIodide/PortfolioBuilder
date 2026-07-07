@@ -75,7 +75,7 @@ export default function Home() {
         </div>
       </Pane>
 
-      <Pane cmd="cat bio.md" label="bio" gridArea="bio">
+      <Pane cmd="cat bio.md" label="bio" gridArea="bio" className="bio-pane">
         <h1 className="name">
           {String(fm.name ?? "Ibraheem Amin").toLowerCase()}{" "}
           <span className="cursor" aria-hidden="true"></span>

@@ -38,6 +38,10 @@
 
   --mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  /* pixel faces are single-weight bitmaps — never let them synthesize bold */
+  --pixel-line: var(--font-pixel-line), var(--font-geist-mono), monospace;
+  --pixel-square: var(--font-pixel-square), var(--font-geist-mono), monospace;
+  --iosevka: var(--font-iosevka), var(--font-geist-mono), monospace;
 
   --sidebar-w: 280px;
   --status-h: 30px;
@@ -131,7 +135,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ── sidebar ─────────────────────────────────────────────────── */
 .sidebar { grid-area: side; border-right: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; }
 .side-head { min-height: 51px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--border); }
-.wordmark { font-weight: 600; font-size: 13px; letter-spacing: -0.02em; text-decoration: none; }
+.wordmark { font-family: var(--pixel-square); font-weight: 400; font-size: 20px; letter-spacing: 0; font-synthesis: none; text-decoration: none; }
 .wordmark .tilde { color: var(--acc-home); }
 .ghosts { display: flex; gap: 2px; }
 .ghost { width: 24px; height: 24px; display: grid; place-items: center; color: var(--muted); font-size: 13px; }
@@ -144,7 +148,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .cell .tt { min-width: 0; flex: 1; }
 .cell .t1 { display: block; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
 .cell .t2 { display: block; font-size: 10px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cell .key { position: absolute; right: 6px; top: 6px; font-size: 9px; line-height: 1; padding: 2px 3px; color: var(--muted); background: color-mix(in srgb, var(--bg) 85%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-strong) 60%, transparent); }
+.cell .key { position: absolute; right: 6px; top: 6px; font-size: 9px; line-height: 1; padding: 2px 3px; color: var(--muted); background: color-mix(in srgb, var(--bg) 85%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-strong) 60%, transparent), 2px 2px 0 0 color-mix(in srgb, var(--acc) 28%, transparent); }
 .cell:hover { background: var(--cell-hover-bg); }
 .cell:hover .t1 { color: var(--text); }
 .cell[aria-current="page"] { background: var(--cell-active-bg); box-shadow: var(--cell-active-shadow); }
@@ -209,6 +213,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .prose + .prose { margin-top: 10px; }
 .lede { font-size: 15px; }
 h1.name { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+/* the home masthead only: Geist Pixel Line on its native 52px grid — the
+   pixel face turns to mush at small sizes, so it never leaks to other
+   h1.name uses (e.g. the projects featured title) */
+.bio-pane h1.name { font-family: var(--pixel-line); font-size: 52px; font-weight: 400; letter-spacing: 0; line-height: 1.1; font-synthesis: none; }
+/* bio.md reads in Iosevka at pixel-cut's smaller, airier setting */
+.bio-pane .prose { font-family: var(--iosevka); font-size: 13.5px; line-height: 1.75; max-width: 80ch; }
+.bio-pane .prose + .prose { margin-top: 11px; }
+.bio-pane .lede { font-size: 14.5px; }
 .cursor { display: inline-block; width: 0.55em; height: 1.05em; background: var(--acc); vertical-align: -0.15em; animation: blink 1.06s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .cursor { animation: none; } * { transition: none !important; } }
@@ -307,5 +319,6 @@ a.ccode:hover { border-color: var(--acc); }
   .wlbl-short { display: inline; }
   /* deck/window tab bars scroll instead of wrapping */
   .tabbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .bio-pane h1.name { font-size: 26px; }
   .hidesm { display: none !important; }
 }
