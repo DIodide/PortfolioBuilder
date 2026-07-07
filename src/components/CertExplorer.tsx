@@ -164,8 +164,8 @@ function Inspector({ provider, cert }: { provider: CertProvider; cert: Cert }) {
             alt={`${cert.name} badge`}
             style={{
               flex: "none",
-              width: 72,
-              height: 72,
+              width: 108,
+              height: 108,
               objectFit: "contain",
               border: "1px solid var(--border-strong)",
               background: "var(--bg)",
@@ -178,32 +178,28 @@ function Inspector({ provider, cert }: { provider: CertProvider; cert: Cert }) {
 }
 
 function ScanPane({ cert }: { cert: Cert }) {
-  // real scan filename when one exists; plausible slug otherwise so the
-  // notch command still reads like a genuine shell invocation
-  const file = cert.scanUrl?.split("/").pop() ?? `${fileSlug(cert.name)}.png`;
+  // scanUrl is only set for real certificate documents (lib/content filters
+  // out badge-icon "scans"); with no scan the pane is omitted entirely and
+  // the sticky column is just x509 → categories
+  if (!cert.scanUrl) return null;
+  const file = cert.scanUrl.split("/").pop() ?? `${fileSlug(cert.name)}.png`;
   return (
     <Pane cmd={`open certificates/${file}`} label="certificate scan">
-      {cert.scanUrl ? (
-        // capped height so the sticky x509 → certificate → categories stack
-        // stays within the viewport; the full scan scrolls inside the frame
-        <div
-          style={{
-            maxHeight: "46vh",
-            overflowY: "auto",
-            border: "1px solid var(--border-strong)",
-          }}
-        >
-          <img
-            src={cert.scanUrl}
-            alt={`${cert.name} certificate scan`}
-            style={{ width: "100%", display: "block" }}
-          />
-        </div>
-      ) : (
-        <p className="dim" style={{ fontSize: 12 }}>
-          open: no scan on file for this certificate
-        </p>
-      )}
+      {/* capped height so the sticky x509 → certificate → categories stack
+          stays within the viewport; the full scan scrolls inside the frame */}
+      <div
+        style={{
+          maxHeight: "46vh",
+          overflowY: "auto",
+          border: "1px solid var(--border-strong)",
+        }}
+      >
+        <img
+          src={cert.scanUrl}
+          alt={`${cert.name} certificate scan`}
+          style={{ width: "100%", display: "block" }}
+        />
+      </div>
     </Pane>
   );
 }
@@ -215,7 +211,11 @@ export default function CertExplorer({ providers }: { providers: CertProvider[] 
   );
 
   const [selectedKey, setSelectedKey] = useState<string>(() => {
-    const first = entries.find((e) => e.cert.verifyUrl) ?? entries[0];
+    // prefer a cert that can show the full trio: x509 + verify link + scan
+    const first =
+      entries.find((e) => e.cert.verifyUrl && e.cert.scanUrl) ??
+      entries.find((e) => e.cert.verifyUrl) ??
+      entries[0];
     return first ? certKey(first.provider.slug, first.cert.name) : "";
   });
   const selected =

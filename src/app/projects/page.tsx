@@ -35,6 +35,9 @@ const firstSentence = (s: string) =>
 
 const startYear = (p: Project) => Number(p.period.match(/\d{4}/)?.[0] ?? 0);
 
+/** Collage panes get squeezed by the hover trade, so cap visible chips. */
+const MAX_CARD_CHIPS = 4;
+
 /** tmux window name: filename minus directory, extension, project prefix. */
 function deckLabel(dir: string, url: string): string {
   const base = fileName(url).replace(/\.[^.]+$/, "");
@@ -86,7 +89,7 @@ function ProjectCard({ p }: { p: Project }) {
 
   return (
     <Pane cmd={`cat ${p.dir}.md`} label={p.name.toLowerCase()}>
-      <ImageDeck images={deckImages(p)} height={130} compact />
+      <ImageDeck images={deckImages(p)} compact />
       <h2
         style={{
           fontSize: 13,
@@ -108,6 +111,25 @@ function ProjectCard({ p }: { p: Project }) {
       <p className="prose" style={{ fontSize: 12.5 }}>
         {firstSentence(p.oneLiner)}
       </p>
+      {p.tech.length > 0 && (
+        <div className="chips">
+          {p.tech.slice(0, MAX_CARD_CHIPS).map((t) => (
+            <span key={t} className="chip">
+              {t}
+            </span>
+          ))}
+          {p.tech.length > MAX_CARD_CHIPS && (
+            <span
+              className="chip faint"
+              // .chip's color wins the cascade over .faint; force the tint
+              style={{ color: "var(--faint)" }}
+              title={p.tech.slice(MAX_CARD_CHIPS).join(", ")}
+            >
+              +{p.tech.length - MAX_CARD_CHIPS}
+            </span>
+          )}
+        </div>
+      )}
       <div className="links">
         {p.deployed && (
           <a href={p.deployed} target="_blank" rel="noopener noreferrer">
@@ -197,7 +219,7 @@ export default function Projects() {
                 </div>
               </div>
               <div className="proj-split-deck">
-                <ImageDeck images={deckImages(featured)} height={280} />
+                <ImageDeck images={deckImages(featured)} maxHeight="60vh" />
               </div>
             </div>
           </Pane>

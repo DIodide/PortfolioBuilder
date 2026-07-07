@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Pane from "@/components/Pane";
 import type { Workplace, WorkRow } from "@/lib/content";
 
@@ -8,6 +8,10 @@ import type { Workplace, WorkRow } from "@/lib/content";
 // is a selector, and the brief pane cats the selected workplace's
 // WORK_DESCRIPTION.md (logo, roles, highlights, tech, art). All strings come
 // from the rows/workplaces props — nothing is invented here.
+//
+// Until the user touches the explorer, the selection auto-rotates through
+// the log's workplaces every 6s (skipped for reduced-motion, paused in
+// hidden tabs). The first interaction hands ownership to the user for good.
 
 /* ── helpers mirrored from work/page.tsx (lib/content is server-only) ── */
 
@@ -126,7 +130,7 @@ function renderBlocks(blocks: Block[]): ReactNode[] {
 
 /* ── brief pane (gridArea: hi) ───────────────────────────────── */
 
-function Brief({ wp }: { wp: Workplace }) {
+function Brief({ wp, onOwn }: { wp: Workplace; onOwn: () => void }) {
   const secs = wp.sections
     .map((s) => ({ heading: s.heading, blocks: cleanSection(s.content) }))
     .filter((s) => s.blocks.length > 0);
@@ -137,6 +141,9 @@ function Brief({ wp }: { wp: Workplace }) {
       label={`workplace brief: ${wp.company.toLowerCase()}`}
       gridArea="hi"
     >
+      {/* display:contents wrapper: any click in the brief content hands
+          rotation ownership to the user without touching layout */}
+      <div style={{ display: "contents" }} onClickCapture={onOwn}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {wp.logoUrl ? (
           <img
@@ -248,6 +255,7 @@ function Brief({ wp }: { wp: Workplace }) {
           })}
         </div>
       )}
+      </div>
     </Pane>
   );
 }
@@ -279,10 +287,71 @@ export default function WorkExplorer({
   });
   const selected = byDir.get(selectedDir);
 
+  /* auto-rotation: distinct workplace dirs in log-row order */
+  const rotation = useMemo(() => {
+    const seen = new Set<string>();
+    const dirs: string[] = [];
+    for (const r of rows) {
+      if (r.dir && byDir.has(r.dir) && !seen.has(r.dir)) {
+        seen.add(r.dir);
+        dirs.push(r.dir);
+      }
+    }
+    return dirs;
+  }, [rows, byDir]);
+
+  // once the user interacts anywhere in the explorer they own the
+  // selection for the session — rotation stops and never restarts
+  const owned = useRef(false);
+  const own = () => {
+    owned.current = true;
+  };
+
+  useEffect(() => {
+    if (rotation.length < 2 || owned.current) return;
+    if (
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return; // reduced motion: keep the default selection until a click
+
+    let id: number | undefined;
+    const stop = () => {
+      if (id !== undefined) {
+        window.clearInterval(id);
+        id = undefined;
+      }
+    };
+    const tick = () => {
+      if (owned.current) {
+        stop();
+        return;
+      }
+      // same setter the row clicks use, so the brief updates identically
+      setSelectedDir((dir) => {
+        const i = rotation.indexOf(dir);
+        return rotation[(i + 1) % rotation.length];
+      });
+    };
+    const start = () => {
+      if (id === undefined && !owned.current) id = window.setInterval(tick, 6000);
+    };
+    const onVisibility = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    if (!document.hidden) start();
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [rotation]);
+
   return (
     <>
       {selected ? (
-        <Brief wp={selected} />
+        <Brief wp={selected} onOwn={own} />
       ) : (
         <Pane
           cmd="cat work/WORK_DESCRIPTION.md"
@@ -327,7 +396,10 @@ export default function WorkExplorer({
                 type="button"
                 className="wlog-row"
                 aria-pressed={wp.dir === selectedDir}
-                onClick={() => setSelectedDir(wp.dir)}
+                onClick={() => {
+                  own(); // ownership first: this selection is the user's
+                  setSelectedDir(wp.dir);
+                }}
               >
                 {content}
               </button>

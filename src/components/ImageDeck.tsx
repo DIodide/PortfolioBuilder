@@ -13,17 +13,23 @@ export interface DeckImage {
 
 // A project's screenshots as a tiny tmux session: the tab bar is the window
 // list ("0:landing-hero 1:chat 2:manage" — digits only in compact mode, the
-// active window starred), the current window renders below at a fixed height,
-// and the caption is the real filename. Click a tab or press ←/→ while the
-// deck has focus to switch windows; arrow events stop propagating so the
-// global mux bindings never see them.
+// active window starred), the current window renders below in a frame that
+// scales with the pane's width (CSS aspect-ratio, never a fixed height), and
+// the caption is the real filename. object-fit: contain + a letterbox tint
+// means no screenshot is ever cropped — non-16:9 shots letterbox gracefully.
+// Click a tab or press ←/→ while the deck has focus to switch windows; arrow
+// events stop propagating so the global mux bindings never see them.
 export default function ImageDeck({
   images,
-  height,
+  aspectRatio = "16 / 9",
+  maxHeight,
   compact = false,
 }: {
   images: DeckImage[];
-  height: number;
+  /** CSS aspect-ratio of the image frame; it scales with available width */
+  aspectRatio?: string;
+  /** optional cap on the frame's height, e.g. "60vh" */
+  maxHeight?: number | string;
   compact?: boolean;
 }) {
   const [selected, setSelected] = useState(0);
@@ -78,7 +84,21 @@ export default function ImageDeck({
           </button>
         ))}
       </div>
-      <img className="deck-img" style={{ height }} src={img.src} alt={img.alt} />
+      <img
+        className="deck-img"
+        style={{
+          aspectRatio,
+          // overrides .deck-img's object-fit: cover — never crop a screenshot
+          objectFit: "contain",
+          // subtle letterbox tint so non-16:9 shots frame instead of chop
+          background: "color-mix(in srgb, var(--border) 40%, var(--bg))",
+          ...(maxHeight !== undefined
+            ? { maxHeight, margin: "0 auto" }
+            : undefined),
+        }}
+        src={img.src}
+        alt={img.alt}
+      />
       <p className="caption">{file}</p>
     </div>
   );

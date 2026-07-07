@@ -225,6 +225,30 @@ export function getProjects(): Project[] {
 
 /* ── certifications ───────────────────────────────────────────── */
 
+/** Width/height from a PNG's IHDR header, or null for non-PNG/unreadable. */
+function pngSize(abs: string): { w: number; h: number } | null {
+  try {
+    const buf = Buffer.alloc(24);
+    const fd = fs.openSync(abs, "r");
+    fs.readSync(fd, buf, 0, 24, 0);
+    fs.closeSync(fd);
+    if (buf.readUInt32BE(0) !== 0x89504e47) return null; // not a PNG
+    if (buf.readUInt32BE(12) !== 0x49484452) return null; // no IHDR
+    return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+  } catch {
+    return null;
+  }
+}
+
+/** Some assets/certificates/ files are just badge icons (small squares),
+ *  not scans of the actual certificate document. Only wide, high-res
+ *  landscape images count as real certificates. */
+function isCertificateScan(abs: string): boolean {
+  const size = pngSize(abs);
+  if (!size) return false;
+  return size.w >= 1000 && size.w > size.h;
+}
+
 export interface Cert {
   name: string;
   semester: string;
@@ -261,6 +285,8 @@ export function getCertProviders(): CertProvider[] {
       fs.existsSync(path.join(providerDir, rel))
         ? `/content-art/developer/certifications/${slug}/${rel}`
         : undefined;
+    const scanArtUrl = (rel: string) =>
+      isCertificateScan(path.join(providerDir, rel)) ? artUrl(rel) : undefined;
     const certs: Cert[] = tableRows(doc.body).map((r) => {
       const verify = r[4] ?? "";
       const logoRel = (r[3] ?? "").startsWith("assets/") ? (r[3] ?? "") : "";
@@ -271,7 +297,7 @@ export function getCertProviders(): CertProvider[] {
         category: r[2] ?? "",
         verifyUrl: /^https?:\/\//.test(verify) ? verify : undefined,
         logoUrl: logoRel ? artUrl(logoRel) : undefined,
-        scanUrl: base ? artUrl(`assets/certificates/${base}-1.png`) : undefined,
+        scanUrl: base ? scanArtUrl(`assets/certificates/${base}-1.png`) : undefined,
       };
     });
     const assetsDir = path.join(providerDir, "assets");
@@ -387,6 +413,158 @@ export function getCourseSections(): CourseSection[] {
       link: linkCell(r[3] ?? "").url,
     })),
   }));
+}
+
+/* ── coursework projects ──────────────────────────────────────── */
+
+export interface CourseworkProject {
+  /** course code(s), e.g. "COS 418" or "HIS 387 / ENG 389 / CDH 387" */
+  course: string;
+  courseTitle: string;
+  semester: string;
+  title: string;
+  team?: string;
+  links: { label: string; url: string }[];
+  paragraphs: string[];
+  highlights: string[];
+  skills: string[];
+  /** content repo still says "(todo ...)" for this one */
+  placeholder: boolean;
+}
+
+const stripMd = (s: string) =>
+  s
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .trim();
+
+const COURSE_HEADING = /^(.+?)\s+—\s+(.+?)\s*\(([^)]+)\)\s*$/;
+
+/** Links from a line, skipping anything the repo marks private/do-not-link. */
+function lineLinks(line: string): { label: string; url: string }[] {
+  if (/private|do not link/i.test(line)) return [];
+  const out: { label: string; url: string }[] = [];
+  for (const m of line.matchAll(/\[([^\]]+)\]\((https?:[^)]+)\)/g)) {
+    out.push({ label: stripMd(m[1]), url: m[2] });
+  }
+  return out;
+}
+
+function parseProjectBlock(
+  courseHeading: string,
+  title: string,
+  block: string,
+): CourseworkProject | null {
+  const m = courseHeading.match(COURSE_HEADING);
+  const project: CourseworkProject = {
+    course: m?.[1].trim() ?? courseHeading,
+    courseTitle: m?.[2].trim() ?? "",
+    semester: m?.[3].trim() ?? "",
+    title: stripMd(title),
+    links: [],
+    paragraphs: [],
+    highlights: [],
+    skills: [],
+    placeholder: false,
+  };
+  // Line-based state machine over the block. Bullets under "Highlights:"
+  // (or any top-level "- " list) may hard-wrap across lines; prose lines in
+  // the same paragraph get joined.
+  let bullet: string | null = null;
+  let prose: string | null = null;
+  let skillsBuf: string | null = null;
+  const flush = () => {
+    if (bullet) project.highlights.push(stripMd(bullet));
+    if (prose) project.paragraphs.push(stripMd(prose));
+    if (skillsBuf)
+      project.skills.push(
+        ...stripMd(skillsBuf)
+          .split(/,\s*/)
+          .map((s) => s.replace(/\.$/, "").trim())
+          .filter(Boolean),
+      );
+    bullet = null;
+    prose = null;
+    skillsBuf = null;
+  };
+  for (const line of block.split("\n")) {
+    const t = line.trim();
+    if (!t || t === "---") {
+      flush();
+    } else if (/^\(?todo/i.test(t)) {
+      flush();
+      project.placeholder = true;
+    } else if (/^(repos?|course notebook|links?):/i.test(t)) {
+      flush();
+      project.links.push(...lineLinks(t));
+    } else if (/^team:/i.test(t)) {
+      flush();
+      project.team = stripMd(t.replace(/^team:\s*/i, ""));
+    } else if (/^(\*\*)?skills:/i.test(t)) {
+      flush();
+      skillsBuf = stripMd(t).replace(/^skills:\s*/i, "");
+    } else if (/^highlights:\s*$/i.test(t)) {
+      flush();
+    } else if (t.startsWith("- ")) {
+      flush();
+      bullet = t.slice(2);
+    } else if (bullet !== null) {
+      bullet += " " + t;
+    } else if (skillsBuf !== null) {
+      skillsBuf += " " + t;
+    } else if (prose !== null) {
+      prose += " " + t;
+    } else {
+      prose = t;
+    }
+  }
+  flush();
+  project.paragraphs = project.paragraphs.filter(Boolean);
+  // an H3 with no real content at all isn't a project yet
+  if (
+    !project.placeholder &&
+    !project.paragraphs.length &&
+    !project.highlights.length &&
+    !project.links.length
+  )
+    return null;
+  return project;
+}
+
+export function getCourseworkProjects(): CourseworkProject[] {
+  const doc = readDoc("developer/coursework/COURSEWORK_PROJECTS.md");
+  if (!doc) return [];
+  const projects: CourseworkProject[] = [];
+  for (const sec of sections(doc.body)) {
+    const subs = sec.content.split(/^### +/m);
+    if (/^additional/i.test(sec.heading)) {
+      // H3s here are course headings; the bolded first line is the title
+      for (const sub of subs.slice(1)) {
+        const nl = sub.indexOf("\n");
+        const courseHeading = nl === -1 ? sub.trim() : sub.slice(0, nl).trim();
+        const body = nl === -1 ? "" : sub.slice(nl + 1).trim();
+        if (!body) continue;
+        const firstLine = body.split("\n")[0];
+        const titleMatch = firstLine.match(/^\*\*([^*]+)\*\*/);
+        const title = titleMatch ? titleMatch[1] : courseHeading;
+        const rest = titleMatch
+          ? ("links: " + firstLine.slice(titleMatch[0].length) + "\n" + body.split("\n").slice(1).join("\n")).trim()
+          : body;
+        const p = parseProjectBlock(courseHeading, title, rest);
+        if (p) projects.push(p);
+      }
+    } else if (COURSE_HEADING.test(sec.heading)) {
+      for (const sub of subs.slice(1)) {
+        const nl = sub.indexOf("\n");
+        const title = nl === -1 ? sub.trim() : sub.slice(0, nl).trim();
+        const body = nl === -1 ? "" : sub.slice(nl + 1).trim();
+        const p = parseProjectBlock(sec.heading, title, body);
+        if (p) projects.push(p);
+      }
+    }
+  }
+  return projects;
 }
 
 /** Semesters in chronological order, e.g. ["Fall 2024", ..., "Spring 2026"]. */
