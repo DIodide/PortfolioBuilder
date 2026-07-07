@@ -31,6 +31,17 @@ const EXCLUDE = new Set([".git", "node_modules", "code"]);
 
 const hasContent = (dir) => fs.existsSync(path.join(dir, "developer"));
 
+function gitSha(dir) {
+  try {
+    return execFileSync("git", ["-C", dir, "rev-parse", "--short", "HEAD"], {
+      encoding: "utf8",
+    }).trim();
+  } catch {
+    return "unknown";
+  }
+}
+let contentSha = "unknown";
+
 function snapshot(srcDir, destDir) {
   fs.mkdirSync(destDir, { recursive: true });
   for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
@@ -46,6 +57,7 @@ fs.rmSync(SNAPSHOT_DIR, { recursive: true, force: true });
 
 if (hasContent(SOURCE_DIR)) {
   console.log(`Snapshotting content from ${SOURCE_DIR}`);
+  contentSha = gitSha(SOURCE_DIR);
   snapshot(SOURCE_DIR, SNAPSHOT_DIR);
 } else {
   const token = process.env.CONTENT_REPO_TOKEN;
@@ -71,9 +83,15 @@ if (hasContent(SOURCE_DIR)) {
     ],
     { stdio: ["ignore", "inherit", "inherit"] }, // token stays in argv, never echoed
   );
+  contentSha = gitSha(cloneDir);
   snapshot(cloneDir, SNAPSHOT_DIR);
   fs.rmSync(cloneDir, { recursive: true, force: true });
 }
+
+fs.writeFileSync(
+  path.join(ROOT, ".content", "meta.json"),
+  JSON.stringify({ sha: contentSha, preparedAt: new Date().toISOString() }),
+);
 
 // Mirror every **/portfolio-art/* file to public/content-art/<same relative path>.
 fs.rmSync(ART_DEST, { recursive: true, force: true });
