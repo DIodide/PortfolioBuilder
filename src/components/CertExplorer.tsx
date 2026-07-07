@@ -96,6 +96,21 @@ function IssuerPane({
         className="meta"
         style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
       >
+        {provider.logoUrl && (
+          <img
+            src={provider.logoUrl}
+            alt={`${provider.provider} logo`}
+            style={{
+              width: 16,
+              height: 16,
+              objectFit: "contain",
+              verticalAlign: "-4px",
+              marginRight: 7,
+              border: "1px solid var(--border-strong)",
+              background: "var(--bg)",
+            }}
+          />
+        )}
         {provider.provider.toLowerCase()}
       </p>
       {scrollList ? (
@@ -113,8 +128,9 @@ function Inspector({ provider, cert }: { provider: CertProvider; cert: Cert }) {
       cmd={`openssl x509 -in ${provider.slug}/${fileSlug(cert.name)}.crt -text`}
       label="certificate inspector"
     >
-      <pre className="block">
-        {`Certificate:
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+        <pre className="block" style={{ flex: "1 1 auto", minWidth: 0 }}>
+          {`Certificate:
     Data:
         Version: 3 (0x2)
         Signature Algorithm: glths-it-diploma
@@ -126,22 +142,68 @@ function Inspector({ provider, cert }: { provider: CertProvider; cert: Cert }) {
         Category: ${cert.category}
     Authority Information Access:
         `}
-        {cert.verifyUrl ? (
-          <>
-            {"Verify — "}
-            <a
-              href={cert.verifyUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="accent"
-            >
-              {host(cert.verifyUrl)} ↗
-            </a>
-          </>
-        ) : (
-          <span className="dim">Verification: no public credential link</span>
+          {cert.verifyUrl ? (
+            <>
+              {"Verify — "}
+              <a
+                href={cert.verifyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="accent"
+              >
+                {host(cert.verifyUrl)} ↗
+              </a>
+            </>
+          ) : (
+            <span className="dim">Verification: no public credential link</span>
+          )}
+        </pre>
+        {cert.logoUrl && (
+          <img
+            src={cert.logoUrl}
+            alt={`${cert.name} badge`}
+            style={{
+              flex: "none",
+              width: 72,
+              height: 72,
+              objectFit: "contain",
+              border: "1px solid var(--border-strong)",
+              background: "var(--bg)",
+            }}
+          />
         )}
-      </pre>
+      </div>
+    </Pane>
+  );
+}
+
+function ScanPane({ cert }: { cert: Cert }) {
+  // real scan filename when one exists; plausible slug otherwise so the
+  // notch command still reads like a genuine shell invocation
+  const file = cert.scanUrl?.split("/").pop() ?? `${fileSlug(cert.name)}.png`;
+  return (
+    <Pane cmd={`open certificates/${file}`} label="certificate scan">
+      {cert.scanUrl ? (
+        // capped height so the sticky x509 → certificate → categories stack
+        // stays within the viewport; the full scan scrolls inside the frame
+        <div
+          style={{
+            maxHeight: "46vh",
+            overflowY: "auto",
+            border: "1px solid var(--border-strong)",
+          }}
+        >
+          <img
+            src={cert.scanUrl}
+            alt={`${cert.name} certificate scan`}
+            style={{ width: "100%", display: "block" }}
+          />
+        </div>
+      ) : (
+        <p className="dim" style={{ fontSize: 12 }}>
+          open: no scan on file for this certificate
+        </p>
+      )}
     </Pane>
   );
 }
@@ -230,6 +292,7 @@ export default function CertExplorer({ providers }: { providers: CertProvider[] 
             }}
           >
             <Inspector provider={selected.provider} cert={selected.cert} />
+            <ScanPane cert={selected.cert} />
             <Pane cmd="cut -f3 certs.tsv | sort | uniq -c" label="categories">
               <pre className="block">
                 {categories.map(([category, count]) => (

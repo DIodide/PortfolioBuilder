@@ -110,6 +110,8 @@
 [data-acc="course"] { --acc: var(--acc-course); --pastel: var(--pastel-course); }
 
 * { box-sizing: border-box; margin: 0; border-radius: 0 !important; }
+/* accent-tinted scrollbars — inherit the active workspace's --acc */
+* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--acc, var(--muted)) 50%, transparent) transparent; }
 html, body { height: 100%; }
 body {
   background: var(--bg);
@@ -252,6 +254,19 @@ a.ccode:hover { border-color: var(--acc); }
 .rgt .divider { color: var(--border-strong); }
 .rgt button:hover { color: var(--text); }
 .toast { color: var(--err); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── nested splits, tab bars, image decks ────────────────────── */
+.machine.inner { border: 0; height: 100%; }
+.tabbar { display: flex; gap: 2px; flex-wrap: wrap; }
+.tab { font-size: 10px; padding: 2px 7px; border: 1px solid var(--border-strong); color: var(--muted); cursor: pointer; white-space: nowrap; }
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { border-color: var(--acc); color: var(--acc); }
+.deck-img { width: 100%; display: block; object-fit: cover; border: 1px solid var(--border); }
+
+/* ── modal (link confirm etc.) ───────────────────────────────── */
+.modal-overlay { position: fixed; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 75%, transparent); z-index: 70; }
+.modal-panel { position: relative; background: var(--bg); border: 1px solid var(--border-strong); padding: 26px 28px 22px; min-width: 320px; max-width: min(480px, 92vw); }
+.modal-panel .notch { color: var(--text); }
 
 /* ── keys overlay ────────────────────────────────────────────── */
 .keys-overlay { position: fixed; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 75%, transparent); z-index: 60; }

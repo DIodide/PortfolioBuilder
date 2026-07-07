@@ -27,15 +27,24 @@ const shortCode = (code: string) => code.split("/")[0].trim();
 /** tree leaf name: lowercase, subtitle after ":" dropped */
 const shortName = (name: string) => name.split(":")[0].trim().toLowerCase();
 
+/** "Fall 2024" → "2024"; unknown formats yield "" */
+const year = (sem: string) => sem.match(/\d{4}/)?.[0] ?? "";
+
 export default function Coursework() {
   const sections = getCourseSections();
   const courses = sections.flatMap((s) => s.courses);
   const semesters = semesterOrder(courses.map((c) => c.semester));
+  const firstYear = year(semesters[0] ?? "");
+  const lastYear = year(semesters[semesters.length - 1] ?? "");
+  const span =
+    firstYear && lastYear && firstYear !== lastYear
+      ? `${firstYear}-${lastYear}`
+      : firstYear;
 
   return (
     <div className="machine fill ws-course" data-acc="course">
       <Pane
-        cmd="cal 2024-2026"
+        cmd={span ? `cal ${span}` : "cal"}
         sub={`· ${semesters.length} semesters · ${courses.length} courses`}
         label="semester calendar"
         gridArea="cal"
@@ -51,7 +60,15 @@ export default function Coursework() {
                     ——— {c.name.toLowerCase()}
                   </span>
                 ) : c.link ? (
-                  <a key={c.code} className="ccode" href={c.link} title={c.name}>
+                  <a
+                    key={c.code}
+                    className="ccode"
+                    href={c.link}
+                    title={c.name}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-confirm=""
+                  >
                     {c.code}
                   </a>
                 ) : (

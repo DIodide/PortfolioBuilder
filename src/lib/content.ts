@@ -230,12 +230,18 @@ export interface Cert {
   semester: string;
   category: string;
   verifyUrl?: string;
+  /** badge icon, site-relative /content-art URL */
+  logoUrl?: string;
+  /** full certificate scan, site-relative /content-art URL */
+  scanUrl?: string;
 }
 
 export interface CertProvider {
   slug: string;
   provider: string;
   count: number;
+  /** provider wordmark/logo if one exists in assets/ */
+  logoUrl?: string;
   certs: Cert[];
 }
 
@@ -250,23 +256,109 @@ export function getCertProviders(): CertProvider[] {
     const doc = readDoc(path.join("developer", "certifications", file.url));
     if (!doc) continue;
     const fm = doc.frontmatter as Record<string, unknown>;
+    const providerDir = path.join(CONTENT_DIR, "developer", "certifications", slug);
+    const artUrl = (rel: string) =>
+      fs.existsSync(path.join(providerDir, rel))
+        ? `/content-art/developer/certifications/${slug}/${rel}`
+        : undefined;
     const certs: Cert[] = tableRows(doc.body).map((r) => {
       const verify = r[4] ?? "";
+      const logoRel = (r[3] ?? "").startsWith("assets/") ? (r[3] ?? "") : "";
+      const base = logoRel ? path.basename(logoRel).replace(/\.[^.]+$/, "") : "";
       return {
         name: r[0] ?? "",
         semester: r[1] ?? "",
         category: r[2] ?? "",
         verifyUrl: /^https?:\/\//.test(verify) ? verify : undefined,
+        logoUrl: logoRel ? artUrl(logoRel) : undefined,
+        scanUrl: base ? artUrl(`assets/certificates/${base}-1.png`) : undefined,
       };
     });
+    const assetsDir = path.join(providerDir, "assets");
+    const providerLogo = fs.existsSync(assetsDir)
+      ? fs.readdirSync(assetsDir).find((f) => /provider-logo/.test(f))
+      : undefined;
     providers.push({
       slug,
       provider: String(fm.provider ?? row[0] ?? slug),
       count: Number(fm.count ?? certs.length) || certs.length,
+      logoUrl: providerLogo ? artUrl(`assets/${providerLogo}`) : undefined,
       certs,
     });
   }
   return providers.sort((a, b) => b.count - a.count);
+}
+
+/* ── workplaces (per-company briefs) ──────────────────────────── */
+
+export interface WorkplaceRole {
+  title: string;
+  period: string;
+  location: string;
+}
+
+export interface Workplace {
+  dir: string;
+  company: string;
+  website?: string;
+  tech: string[];
+  /** company logo, site-relative /content-art URL */
+  logoUrl?: string;
+  /** portfolio-art images other than the logo */
+  images: string[];
+  roles: WorkplaceRole[];
+  /** body H2 sections, with repo-maintenance sections (Art, Code) excluded */
+  sections: { heading: string; content: string }[];
+}
+
+export function getWorkplaces(): Workplace[] {
+  const workRoot = path.join(CONTENT_DIR, "developer", "work");
+  if (!fs.existsSync(workRoot)) return [];
+  return fs
+    .readdirSync(workRoot, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .flatMap((e) => {
+      const doc = readDoc(path.join("developer", "work", e.name, "WORK_DESCRIPTION.md"));
+      if (!doc) return [];
+      const fm = doc.frontmatter as Record<string, unknown>;
+      const logoRel = typeof fm.logo === "string" ? fm.logo : "";
+      const artDir = path.join(workRoot, e.name, "portfolio-art");
+      const images = fs.existsSync(artDir)
+        ? fs
+            .readdirSync(artDir)
+            .filter(
+              (f) =>
+                /\.(png|jpe?g|webp|svg|gif)$/i.test(f) &&
+                `portfolio-art/${f}` !== logoRel,
+            )
+            .map((f) => `/content-art/developer/work/${e.name}/portfolio-art/${f}`)
+        : [];
+      const roles = Array.isArray(fm.roles)
+        ? (fm.roles as Record<string, unknown>[]).map((r) => ({
+            title: String(r.title ?? ""),
+            period: String(r.period ?? ""),
+            location: String(r.location ?? ""),
+          }))
+        : [];
+      return [
+        {
+          dir: e.name,
+          company: String(fm.company ?? e.name),
+          website: typeof fm.website === "string" ? fm.website : undefined,
+          tech: Array.isArray(fm.tech) ? fm.tech.map(String) : [],
+          logoUrl:
+            logoRel &&
+            fs.existsSync(path.join(workRoot, e.name, logoRel))
+              ? `/content-art/developer/work/${e.name}/${logoRel}`
+              : undefined,
+          images,
+          roles,
+          sections: sections(doc.body).filter(
+            (s) => !/^(art|code)$/i.test(s.heading.trim()),
+          ),
+        },
+      ];
+    });
 }
 
 /* ── coursework ───────────────────────────────────────────────── */

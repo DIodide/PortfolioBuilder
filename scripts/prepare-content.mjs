@@ -115,4 +115,22 @@ function mirrorArt(dir) {
   }
 }
 mirrorArt(SNAPSHOT_DIR);
-console.log(`Snapshot ready at .content/portfolio; ${copied} portfolio-art file(s) mirrored to public/content-art.`);
+
+// Mirror certification assets too (badge icons, provider logos, certificate
+// scans) — they live under assets/ dirs, not portfolio-art/.
+function mirrorImages(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) mirrorImages(abs);
+    else if (/\.(png|jpe?g|webp|svg|gif)$/i.test(entry.name)) {
+      const rel = path.relative(SNAPSHOT_DIR, abs);
+      const dest = path.join(ART_DEST, rel);
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.copyFileSync(abs, dest);
+      copied++;
+    }
+  }
+}
+mirrorImages(path.join(SNAPSHOT_DIR, "developer", "certifications"));
+console.log(`Snapshot ready at .content/portfolio; ${copied} image file(s) mirrored to public/content-art.`);

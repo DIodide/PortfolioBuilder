@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import LinkGuard from "@/components/LinkGuard";
 import MuxController from "@/components/MuxController";
 import Sidebar from "@/components/Sidebar";
 import StatusBar from "@/components/StatusBar";
@@ -41,6 +42,7 @@ export default function RootLayout({
         <main className="main">{children}</main>
         <StatusBar />
         <MuxController />
+        <LinkGuard />
       </body>
     </html>
   );

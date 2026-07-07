@@ -84,18 +84,37 @@ export default function Home() {
 
       <Pane cmd="cat socials.yml" label="socials" gridArea="soc">
         <div className="rows">
-          {socials.map((s) => (
-            <a key={s.key} href={s.href}>
-              <span className="accent">{s.key}:</span> {s.label}
-              {s.href.startsWith("http") && <span className="faint"> ↗</span>}
-            </a>
-          ))}
+          {socials.map((s) => {
+            const external = s.href.startsWith("http");
+            return (
+              // label is the handle and the key names the platform, so the
+              // destination is evident — no data-confirm needed.
+              <a
+                key={s.key}
+                href={s.href}
+                {...(external
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
+              >
+                <span className="accent">{s.key}:</span> {s.label}
+                {external && <span className="faint"> ↗</span>}
+              </a>
+            );
+          })}
         </div>
       </Pane>
 
       {resumeReady ? (
         <Pane cmd="open resume.pdf" label="resume" gridArea="res">
-          <a className="btn" href={resume}>
+          {/* "$ open resume.pdf" doesn't name the destination host, so an
+              external resume link gets the LinkGuard confirm. */}
+          <a
+            className="btn"
+            href={resume}
+            target={resume.startsWith("http") ? "_blank" : undefined}
+            rel={resume.startsWith("http") ? "noopener noreferrer" : undefined}
+            data-confirm={resume.startsWith("http") ? "" : undefined}
+          >
             $ open resume.pdf
           </a>
         </Pane>

@@ -97,7 +97,14 @@ export default function Sidebar() {
           <span>Pinned</span>
         </div>
         {socials.map((s) => (
-          <a key={s.key} className="pin-row" href={s.href}>
+          <a
+            key={s.key}
+            className="pin-row"
+            href={s.href}
+            {...(s.href.startsWith("http")
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
+          >
             <span className="k">{s.key}</span> {s.label}
             {s.href.startsWith("http") ? " ↗" : ""}
           </a>
