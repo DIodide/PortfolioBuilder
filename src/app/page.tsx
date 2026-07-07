@@ -33,7 +33,15 @@ export default function Home() {
   const school = socials.find((s) => s.key === "school");
 
   return (
-    <div className="machine fill ws-home" data-acc="home">
+    <>
+      <style>{`
+        @media (max-width: 860px) {
+          /* finger-sized rows: 12px text + 11px padding ≈ 40px tall */
+          [data-acc="home"] .rows a { padding: 11px 0; }
+          [data-acc="home"] .btn { padding: 10px 16px; }
+        }
+      `}</style>
+      <div className="machine fill ws-home" data-acc="home">
       <Pane cmd="neofetch" label="identity" gridArea="neo">
         <pre className="glyph" aria-hidden="true">
           {GLYPH}
@@ -48,7 +56,10 @@ export default function Home() {
           <span>{String(fm.school ?? "").toLowerCase()}</span>
           <span className="k">os</span>
           <span>
-            {String(fm.degree ?? "").toLowerCase()} &#39;
+            {/* explicit string: JSX text ending a line gets its leading
+                space stripped by the compiler ("science'28") */}
+            {String(fm.degree ?? "").toLowerCase()}
+            {" '"}
             {String(fm.class_year ?? "").slice(-2)}
           </span>
           <span className="k">shell</span>
@@ -70,8 +81,12 @@ export default function Home() {
           <span className="cursor" aria-hidden="true"></span>
         </h1>
         <p className="meta">
-          {String(fm.degree ?? "")} · princeton &#39;
-          {String(fm.class_year ?? "").slice(-2)} ·{" "}
+          {/* separators as explicit strings — same-line JSX text before a
+              newline loses its leading space ("Science· princeton") */}
+          {String(fm.degree ?? "")}
+          {" · princeton '"}
+          {String(fm.class_year ?? "").slice(-2)}
+          {" · "}
           {String(fm.location ?? "").toLowerCase()}
         </p>
         <p className="prose lede">{bio.oneLiner}</p>
@@ -154,6 +169,7 @@ export default function Home() {
           </span>
         </div>
       </Pane>
-    </div>
+      </div>
+    </>
   );
 }

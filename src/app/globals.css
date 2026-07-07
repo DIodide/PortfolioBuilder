@@ -195,8 +195,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .pane:focus > .notch { color: var(--acc); }
 .flag { position: absolute; top: 0; right: 64px; transform: translateY(-55%); background: var(--bg); padding: 0 6px; font-size: 10px; color: var(--acc); display: none; z-index: 2; }
 
-/* zoom: pane takes over the main region as a fixed overlay */
-.pane.zoom { position: fixed; left: calc(var(--sidebar-w) + 1px); top: 0; right: 0; bottom: calc(var(--status-h) + 1px); z-index: 40; border: 1px solid var(--acc); box-shadow: none; }
+/* zoom: pane takes over the main region as a fixed overlay
+   (top offset leaves room for the border-notch title, which hangs
+   translateY(-55%) above the pane edge) */
+.pane.zoom { position: fixed; left: calc(var(--sidebar-w) + 1px); top: 9px; right: 0; bottom: calc(var(--status-h) + 1px); z-index: 40; border: 1px solid var(--acc); box-shadow: none; }
 .pane.zoom > .flag { display: block; }
 .pane.zoom > .notch { color: var(--acc); }
 
@@ -285,10 +287,16 @@ a.ccode:hover { border-color: var(--acc); }
   .machine, .ws-home, .ws-work, .ws-course { display: grid; grid-template-columns: 1fr !important; grid-template-areas: none !important; grid-template-rows: none !important; height: auto; }
   .machine > .pane, .stack .pane { grid-area: auto !important; }
   .pane .scroll { height: auto; max-height: none; overflow: visible; padding: 16px 14px 20px; }
+  /* stacked collage panes take their natural content height — flex-basis 0
+     in a column flow collapses panes to zero and overlays their content */
   .collage-row { flex-direction: column; min-height: 0; }
-  .collage-row .pane:hover, .collage-row .pane:focus-within { flex-grow: 1; }
+  .collage-row .pane { flex: 0 0 auto; }
+  .collage-row .pane:hover, .collage-row .pane:focus-within { flex-grow: 0; }
   .pane.zoom { left: 0; bottom: 45px; }
   .pane.zoom .scroll { height: 100%; overflow: auto; }
+  /* finger-sized hit areas for the tiny ⛶ zoom glyph and modal buttons */
+  .notch.nr button { padding: 14px 12px; margin: -14px -12px; background: none; }
+  .modal-panel .btn { padding: 10px 16px; }
   /* status bar: single row, horizontally scrollable, short window labels */
   .status { padding: 0 6px; gap: 6px; }
   .status .lft { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }

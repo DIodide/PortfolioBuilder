@@ -199,6 +199,10 @@ export default function Coursework() {
           .ws-course a.ccode { position: relative; }
           .ws-course a.ccode::after { content: ""; position: absolute; inset: -9px -3px; }
           .ws-course .cal-row { gap: 12px 8px; }
+          /* repo/demo links are 18px-tall text; same invisible hit-slop
+             treatment (16px link gap and 28px entry gap absorb it) */
+          .ws-course .links a { position: relative; }
+          .ws-course .links a::after { content: ""; position: absolute; inset: -11px -6px; }
           /* todo chips carry full course names; ellipsize instead of
              pushing the page sideways on narrow screens */
           .ws-course .ccode.todo { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }

@@ -16,10 +16,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "https://portfolio-builder-ochre-six.vercel.app";
+
+const DESCRIPTION =
+  "Ibraheem Amin builds systems at the intersection of AI tooling, web infrastructure, and developer experience. Princeton B.S.E. Computer Science, Class of 2028.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Ibraheem Amin — Princeton CS '28",
-  description:
-    "Ibraheem Amin builds systems at the intersection of AI tooling, web infrastructure, and developer experience. Princeton B.S.E. Computer Science, Class of 2028.",
+  description: DESCRIPTION,
+  openGraph: {
+    siteName: "ibraheem amin — terminal portfolio",
+    type: "website",
+    title: "Ibraheem Amin — Princeton CS '28",
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 // Stamp the stored theme before first paint so there is no flash.

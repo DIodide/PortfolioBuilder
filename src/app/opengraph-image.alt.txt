@@ -1,0 +1,1 @@
+terminal-style card: ibraheem amin — b.s.e. computer science, princeton '28. i build systems at the intersection of ai tooling, web infrastructure, and developer experience. tmux status bar listing workspaces: home, work, projects, certs, coursework.

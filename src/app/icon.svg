@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <!-- tmux panes mark. 2-unit grid: every edge lands on whole pixels at 16px. -->
+  <!-- frame (faint) -->
+  <rect x="0" y="0" width="32" height="32" fill="#5b6370"/>
+  <!-- terminal background -->
+  <rect x="2" y="2" width="28" height="28" fill="#0b0d10"/>
+  <!-- vertical split: main pane left, stacked panes right -->
+  <rect x="18" y="2" width="2" height="22" fill="#30363d"/>
+  <!-- horizontal split of the right column -->
+  <rect x="20" y="12" width="10" height="2" fill="#30363d"/>
+  <!-- status bar separator -->
+  <rect x="2" y="24" width="28" height="2" fill="#30363d"/>
+  <!-- session chip, reversed-video accent, flush-left in the bar -->
+  <rect x="2" y="26" width="10" height="4" fill="#58bee8"/>
+  <!-- block cursor in the main pane, home blue -->
+  <rect x="6" y="6" width="6" height="8" fill="#58bee8"/>
+</svg>
