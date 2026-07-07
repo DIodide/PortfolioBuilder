@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const ROUTES = ["/", "/work", "/projects", "/certifications", "/coursework"];
@@ -39,12 +39,17 @@ function toggleZoom(pane: Element) {
 
 // One client island for the whole session: keyboard bindings, pane zoom,
 // theme toggle, easter eggs, and the ? overlay. Everything else ships as
-// static server-rendered HTML.
+// static server-rendered HTML. Keys are surface-aware: digits mean
+// workspaces on the portfolio surface and posts on thought-sandboxes,
+// while [ / ] cycle between the two surfaces from anywhere. (The thoughts
+// reader owns Escape in the capture phase — it never reaches us there.)
 export default function MuxController() {
   const router = useRouter();
+  const pathname = usePathname();
   const [keysOpen, setKeysOpen] = useState(false);
 
   useEffect(() => {
+    const onThoughts = pathname.startsWith("/thoughts");
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const target = e.target as HTMLElement;
@@ -55,10 +60,24 @@ export default function MuxController() {
         return;
       }
       if (keysOpen) return;
-      const n = parseInt(e.key, 10);
-      if (n >= 1 && n <= ROUTES.length) {
+      if (e.key === "[" || e.key === "]") {
+        // two surfaces, so prev and next are the same toggle
         unzoomAll();
-        router.push(ROUTES[n - 1]);
+        router.push(onThoughts ? "/" : "/thoughts");
+        return;
+      }
+      const n = parseInt(e.key, 10);
+      if (n >= 1 && n <= 9) {
+        if (onThoughts) {
+          // digits open posts here, never workspaces — the index page
+          // tags its post links with data-post-shortcut
+          document
+            .querySelector<HTMLElement>(`[data-post-shortcut="${n}"]`)
+            ?.click();
+        } else if (n <= ROUTES.length) {
+          unzoomAll();
+          router.push(ROUTES[n - 1]);
+        }
         return;
       }
       if (e.key === "z") {
@@ -96,7 +115,7 @@ export default function MuxController() {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("click", onClick);
     };
-  }, [router, keysOpen]);
+  }, [router, pathname, keysOpen]);
 
   if (!keysOpen) return null;
   return (
@@ -116,8 +135,15 @@ export default function MuxController() {
         <table>
           <tbody>
             <tr>
+              <td>[ / ]</td>
+              <td>cycle surfaces (portfolio · thought-sandboxes)</td>
+            </tr>
+            <tr>
               <td>1 – 5</td>
-              <td>select-window (home · work · projects · certs · coursework)</td>
+              <td>
+                select-window — digits follow the surface (workspaces on
+                portfolio · posts on thought-sandboxes)
+              </td>
             </tr>
             <tr>
               <td>z</td>

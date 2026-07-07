@@ -12,8 +12,37 @@ export const WINDOWS = [
   { acc: "course", href: "/coursework", label: "5:coursework", short: "5:courses" },
 ];
 
+const shortSlug = (s: string, max = 18) =>
+  s.length > max ? `${s.slice(0, max - 1)}…` : s;
+
 export function WindowList() {
   const pathname = usePathname();
+  if (pathname.startsWith("/thoughts")) {
+    // thought-sandboxes surface: buffers, not workspaces — 0:index plus
+    // the open post when reading
+    const slug = pathname.split("/").filter(Boolean)[1];
+    return (
+      <>
+        <span className="sess" data-acc="thoughts">
+          [ibraheem]
+        </span>
+        <nav className="wlist" aria-label="buffer switcher">
+          <Link
+            href="/thoughts"
+            data-acc="thoughts"
+            aria-current={slug ? undefined : "page"}
+          >
+            0:index{slug ? "" : "*"}
+          </Link>
+          {slug ? (
+            <Link href={pathname} data-acc="thoughts" aria-current="page">
+              1:{shortSlug(slug)}*
+            </Link>
+          ) : null}
+        </nav>
+      </>
+    );
+  }
   const active = WINDOWS.find((w) => w.href === pathname) ?? WINDOWS[0];
   return (
     <>

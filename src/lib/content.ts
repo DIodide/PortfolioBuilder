@@ -587,15 +587,95 @@ export function semesterOrder(semesters: string[]): string[] {
 export const shortSemester = (s: string) =>
   s.replace(/Fall\s+20(\d\d)/i, "F$1").replace(/Spring\s+20(\d\d)/i, "S$1").replace(/Summer\s+20(\d\d)/i, "Su$1");
 
+/* ── thought sandboxes (blog posts) ───────────────────────────── */
+
+const THOUGHTS_DIR = path.join(process.cwd(), ".content", "thoughts");
+
+export interface Post {
+  /** url slug derived from the filename */
+  slug: string;
+  /** original filename (may contain spaces) */
+  file: string;
+  title: string;
+  description: string;
+  tags: string[];
+  /** YYYY-MM-DD */
+  date: string;
+  author: string;
+  /** hide: true = draft — NEVER shipped to the public site */
+  hide: boolean;
+  image?: string;
+  /** raw markdown body (HTML comments stripped) */
+  body: string;
+  words: number;
+}
+
+const slugify = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/\.md$/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+/** Published posts, newest first. Drafts (hide: true) are excluded from the
+ *  public build entirely; set SHOW_DRAFTS=1 locally to preview them. */
+export function getPosts(
+  includeDrafts = process.env.SHOW_DRAFTS === "1",
+): Post[] {
+  const postsDir = path.join(THOUGHTS_DIR, "posts");
+  if (!fs.existsSync(postsDir)) return [];
+  return fs
+    .readdirSync(postsDir)
+    .filter((f) => f.endsWith(".md"))
+    .map((f) => {
+      const { data, content } = matter(
+        fs.readFileSync(path.join(postsDir, f), "utf8"),
+      );
+      const fm = data as Record<string, unknown>;
+      const body = stripHtmlComments(content).trim();
+      return {
+        slug: slugify(f),
+        file: f,
+        title: String(fm.title ?? f.replace(/\.md$/, "")),
+        description: String(fm.description ?? ""),
+        tags: Array.isArray(fm.tags) ? fm.tags.map(String) : [],
+        date: fm.date instanceof Date ? fm.date.toISOString().slice(0, 10) : String(fm.date ?? ""),
+        author: String(fm.author ?? "Ibraheem Amin"),
+        hide: fm.hide === true,
+        image: typeof fm.image === "string" ? fm.image : undefined,
+        body,
+        words: body.split(/\s+/).filter(Boolean).length,
+      };
+    })
+    .filter((p) => includeDrafts || !p.hide)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function getThoughtsMeta(): { published: number; drafts: number } {
+  const all = getPosts(true);
+  const drafts = all.filter((p) => p.hide).length;
+  return { published: all.length - drafts, drafts };
+}
+
+/** attachment file → site URL, or undefined when missing */
+export function attachmentUrl(name: string): string | undefined {
+  return fs.existsSync(path.join(THOUGHTS_DIR, "attachments", name))
+    ? `/content-art/thoughts/attachments/${encodeURIComponent(name)}`
+    : undefined;
+}
+
 /* ── build metadata ───────────────────────────────────────────── */
 
-export function getContentMeta(): { sha: string } {
+export function getContentMeta(): { sha: string; thoughtsSha: string } {
   try {
     const meta = JSON.parse(
       fs.readFileSync(path.join(process.cwd(), ".content", "meta.json"), "utf8"),
     );
-    return { sha: String(meta.sha ?? "dev") };
+    return {
+      sha: String(meta.sha ?? "dev"),
+      thoughtsSha: String(meta.thoughtsSha ?? "dev"),
+    };
   } catch {
-    return { sha: "dev" };
+    return { sha: "dev", thoughtsSha: "dev" };
   }
 }

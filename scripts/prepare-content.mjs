@@ -88,9 +88,51 @@ if (hasContent(SOURCE_DIR)) {
   fs.rmSync(cloneDir, { recursive: true, force: true });
 }
 
+// ── thoughts (blog posts) — second content submodule ─────────────────
+// Same pattern as portfolio, but a missing/uncloneable repo must NEVER fail
+// the build: the site renders a designed empty state instead.
+const THOUGHTS_SOURCE = process.env.THOUGHTS_SOURCE_DIR ?? path.join(ROOT, "content", "thoughts");
+const THOUGHTS_REPO = process.env.THOUGHTS_REPO ?? "github.com/DIodide/thoughts.git";
+const THOUGHTS_SNAP = path.join(ROOT, ".content", "thoughts");
+let thoughtsSha = "unknown";
+fs.rmSync(THOUGHTS_SNAP, { recursive: true, force: true });
+const hasThoughts = (dir) => fs.existsSync(path.join(dir, "posts"));
+
+if (hasThoughts(THOUGHTS_SOURCE)) {
+  console.log(`Snapshotting thoughts from ${THOUGHTS_SOURCE}`);
+  thoughtsSha = gitSha(THOUGHTS_SOURCE);
+  snapshot(THOUGHTS_SOURCE, THOUGHTS_SNAP);
+} else if (process.env.CONTENT_REPO_TOKEN) {
+  const cloneDir = path.join(ROOT, ".content", ".clone-thoughts");
+  fs.rmSync(cloneDir, { recursive: true, force: true });
+  try {
+    // token via header (not URL) so a failed clone can't echo it in logs
+    const basic = Buffer.from(`x-access-token:${process.env.CONTENT_REPO_TOKEN}`).toString("base64");
+    execFileSync(
+      "git",
+      [
+        "-c", `http.extraHeader=Authorization: Basic ${basic}`,
+        "clone", "--depth", "1", "--no-recurse-submodules",
+        `https://${THOUGHTS_REPO}`, cloneDir,
+      ],
+      { stdio: ["ignore", "inherit", "inherit"] },
+    );
+    thoughtsSha = gitSha(cloneDir);
+    snapshot(cloneDir, THOUGHTS_SNAP);
+  } catch {
+    console.warn(
+      "WARN: could not clone the thoughts repo — building with no posts. " +
+        "If this is Vercel, make sure CONTENT_REPO_TOKEN's fine-grained PAT also covers DIodide/thoughts.",
+    );
+  } finally {
+    fs.rmSync(cloneDir, { recursive: true, force: true });
+  }
+}
+fs.mkdirSync(path.join(THOUGHTS_SNAP, "posts"), { recursive: true });
+
 fs.writeFileSync(
   path.join(ROOT, ".content", "meta.json"),
-  JSON.stringify({ sha: contentSha, preparedAt: new Date().toISOString() }),
+  JSON.stringify({ sha: contentSha, thoughtsSha, preparedAt: new Date().toISOString() }),
 );
 
 // Mirror every **/portfolio-art/* file to public/content-art/<same relative path>.
@@ -133,4 +175,18 @@ function mirrorImages(dir) {
   }
 }
 mirrorImages(path.join(SNAPSHOT_DIR, "developer", "certifications"));
+
+// Mirror thought-post attachments LAST — the ART_DEST reset above would wipe
+// anything mirrored earlier.
+const attSrc = path.join(THOUGHTS_SNAP, "attachments");
+const attDest = path.join(ART_DEST, "thoughts", "attachments");
+if (fs.existsSync(attSrc)) {
+  fs.mkdirSync(attDest, { recursive: true });
+  for (const f of fs.readdirSync(attSrc)) {
+    if (/\.(png|jpe?g|webp|svg|gif)$/i.test(f)) {
+      fs.copyFileSync(path.join(attSrc, f), path.join(attDest, f));
+      copied++;
+    }
+  }
+}
 console.log(`Snapshot ready at .content/portfolio; ${copied} image file(s) mirrored to public/content-art.`);

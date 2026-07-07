@@ -45,6 +45,17 @@
 
   --sidebar-w: 280px;
   --status-h: 30px;
+  --strip-h: 34px;
+
+  /* thought-sandboxes surface accent (rose — the hue the 5 workspaces never use) */
+  --acc-thoughts: #a83a5e;
+  --pastel-thoughts: #f5dce6;
+  /* two-skin reading sheet: light theme = warm paper */
+  --sheet-bg: #faf8f4;
+  --sheet-ink: #1c1a17;
+  --sheet-muted: #6d6759;
+  --sheet-rule: #e2ddd2;
+  --sheet-serif: var(--font-stix), "STIX Two Text", Georgia, serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -61,6 +72,12 @@
     --acc-proj: #4fd894;
     --acc-cert: #e5b457;
     --acc-course: #b394ed;
+    --acc-thoughts: #f27a9d;
+    --sheet-bg: #11141a;
+    --sheet-ink: #e9e4d9;
+    --sheet-muted: #948e80;
+    --sheet-rule: #262b33;
+    --sheet-serif: var(--font-literata), "Literata", Georgia, serif;
     --cell-idle-bg: color-mix(in srgb, var(--acc) 7%, transparent);
     --cell-hover-bg: color-mix(in srgb, var(--acc) 11%, transparent);
     --cell-active-bg: color-mix(in srgb, var(--acc) 14%, transparent);
@@ -81,6 +98,12 @@
   --acc-proj: #4fd894;
   --acc-cert: #e5b457;
   --acc-course: #b394ed;
+  --acc-thoughts: #f27a9d;
+  --sheet-bg: #11141a;
+  --sheet-ink: #e9e4d9;
+  --sheet-muted: #948e80;
+  --sheet-rule: #262b33;
+  --sheet-serif: var(--font-literata), "Literata", Georgia, serif;
   --cell-idle-bg: color-mix(in srgb, var(--acc) 7%, transparent);
   --cell-hover-bg: color-mix(in srgb, var(--acc) 11%, transparent);
   --cell-active-bg: color-mix(in srgb, var(--acc) 14%, transparent);
@@ -88,6 +111,12 @@
     inset 0 0 0 1px color-mix(in srgb, var(--acc) 55%, transparent);
 }
 :root[data-theme="light"] {
+  --acc-thoughts: #a83a5e;
+  --sheet-bg: #faf8f4;
+  --sheet-ink: #1c1a17;
+  --sheet-muted: #6d6759;
+  --sheet-rule: #e2ddd2;
+  --sheet-serif: var(--font-stix), "STIX Two Text", Georgia, serif;
   --bg: #ffffff;
   --border: #e3e5e9;
   --border-strong: #d0d7de;
@@ -112,6 +141,7 @@
 [data-acc="proj"]   { --acc: var(--acc-proj);   --pastel: var(--pastel-proj); }
 [data-acc="cert"]   { --acc: var(--acc-cert);   --pastel: var(--pastel-cert); }
 [data-acc="course"] { --acc: var(--acc-course); --pastel: var(--pastel-course); }
+[data-acc="thoughts"] { --acc: var(--acc-thoughts); --pastel: var(--pastel-thoughts); }
 
 * { box-sizing: border-box; margin: 0; border-radius: 0 !important; }
 /* accent-tinted scrollbars — inherit the active workspace's --acc */
@@ -123,8 +153,8 @@ body {
   font: 400 13px/1.5 var(--mono);
   display: grid;
   grid-template-columns: var(--sidebar-w) 1fr;
-  grid-template-rows: 1fr var(--status-h);
-  grid-template-areas: "side main" "status status";
+  grid-template-rows: var(--strip-h) 1fr var(--status-h);
+  grid-template-areas: "strip strip" "side main" "status status";
   height: 100dvh;
   overflow: hidden;
 }
@@ -202,7 +232,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* zoom: pane takes over the main region as a fixed overlay
    (top offset leaves room for the border-notch title, which hangs
    translateY(-55%) above the pane edge) */
-.pane.zoom { position: fixed; left: calc(var(--sidebar-w) + 1px); top: 9px; right: 0; bottom: calc(var(--status-h) + 1px); z-index: 40; border: 1px solid var(--acc); box-shadow: none; }
+.pane.zoom { position: fixed; left: calc(var(--sidebar-w) + 1px); top: calc(var(--strip-h) + 9px); right: 0; bottom: calc(var(--status-h) + 1px); z-index: 40; border: 1px solid var(--acc); box-shadow: none; }
 .pane.zoom > .flag { display: block; }
 .pane.zoom > .notch { color: var(--acc); }
 
@@ -256,6 +286,17 @@ a.ccode:hover { border-color: var(--acc); }
 .ccode.todo { border-style: dashed; color: var(--muted); background: none; }
 .bar { color: var(--acc); }
 
+
+/* ── surface strip (global top tabs: portfolio ⇄ thought-sandboxes) ── */
+.surface-strip { grid-area: strip; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-bottom: 1px solid var(--border); font-size: 11px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.surface-strip .lbl { color: var(--faint); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.surf-tab { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border: 1px solid var(--border-strong); color: var(--muted); text-decoration: none; white-space: nowrap; }
+.surf-tab:hover { color: var(--text); }
+.surf-tab .ctx { color: var(--faint); }
+.surf-tab[aria-current="true"] { color: var(--acc); border-color: color-mix(in srgb, var(--acc) 60%, transparent); background: color-mix(in srgb, var(--acc) 9%, transparent); }
+.surf-plus { padding: 3px 8px; border: 1px dashed var(--border-strong); color: var(--faint); }
+.surface-strip .rgt { margin-left: auto; color: var(--faint); display: flex; gap: 10px; white-space: nowrap; }
+
 /* ── status bar ──────────────────────────────────────────────── */
 .status { grid-area: status; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 11px; font-variant-numeric: tabular-nums; min-width: 0; gap: 10px; }
 .status .lft, .status .rgt { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -293,7 +334,7 @@ a.ccode:hover { border-color: var(--acc); }
 /* ── mobile: even-vertical relayout ──────────────────────────── */
 .wlbl-short { display: none; }
 @media (max-width: 860px) {
-  body { grid-template-columns: 1fr; grid-template-rows: 1fr 44px; grid-template-areas: "main" "status"; }
+  body { grid-template-columns: 1fr; grid-template-rows: var(--strip-h) 1fr 44px; grid-template-areas: "strip" "main" "status"; }
   .sidebar { display: none; }
   .main { padding: 8px; }
   .machine, .ws-home, .ws-work, .ws-course { display: grid; grid-template-columns: 1fr !important; grid-template-areas: none !important; grid-template-rows: none !important; height: auto; }

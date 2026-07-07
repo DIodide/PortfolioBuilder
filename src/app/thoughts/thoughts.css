@@ -1,0 +1,191 @@
+/* ════════════════════════════════════════════════════════════════
+   thought-sandboxes surface — TWO SKINS, ONE SYSTEM
+   The mux chassis stays terminal (strip · sidebar · pane · status);
+   only the reading sheet is "relit" by the site theme through the
+   sheet tokens in globals.css:
+     dark  = the book  (#11141a ground, Literata)
+     light = the paper (#faf8f4 ground, STIX Two Text)
+   Nothing here hardcodes a skin — everything reads the tokens.
+   ════════════════════════════════════════════════════════════════ */
+
+[data-acc="thoughts"] {
+  /* derived sheet shades: soft prose ink and furniture-faint ink */
+  --sheet-soft: color-mix(in srgb, var(--sheet-ink) 66%, var(--sheet-muted));
+  --sheet-faint: color-mix(in srgb, var(--sheet-muted) 55%, var(--sheet-bg));
+}
+
+/* ── sidebar extras (the terminal remnant) ───────────────────── */
+.side-scroll { overflow-y: auto; min-height: 0; }
+.tagcloud { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 8px 4px; }
+.side-tag { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border: 1px solid var(--border-strong); color: var(--muted); white-space: nowrap; }
+.toc { display: flex; flex-direction: column; gap: 1px; padding: 0 4px; }
+.toc button { font-size: 11px; text-align: left; color: var(--muted); padding: 4px 8px; border-left: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toc button:hover { color: var(--text); }
+.toc button.on { color: var(--text); border-left: 2px solid var(--acc); padding-left: 7px; background: color-mix(in srgb, var(--acc) 9%, transparent); }
+
+/* ── the single-pane machine holding the sheet ───────────────── */
+/* main is the scroll container; the pane grows with its content */
+.ws-thoughts { grid-template-columns: 1fr; }
+.tpane { padding: 20px 18px 28px; }
+.tpane > .notch.nr { display: inline-flex; align-items: center; gap: 10px; }
+.tpane > .notch.nr a { color: var(--faint); font-size: 11px; padding: 0 2px; text-decoration: none; }
+.tpane > .notch.nr a:hover { color: var(--muted); }
+
+/* the obsidian src ⇄ read chip — pane chrome, terminal voice
+   (selector outspecifies globals' .notch.nr button reset) */
+.notch.nr button.mode-chip { display: inline-flex; align-items: baseline; gap: 5px; border: 1px solid var(--border-strong); padding: 2px 8px; font-size: 10px; color: var(--faint); background: var(--bg); }
+.notch.nr button.mode-chip:hover { border-color: var(--muted); }
+.mode-chip .mc { letter-spacing: 0.04em; }
+.mode-chip .arr { color: var(--faint); }
+.mode-chip[data-mode="read"] .mc-read, .mode-chip[data-mode="src"] .mc-src { color: var(--acc); font-weight: 600; }
+
+/* ══ THE SHEET — one lifted document, two lights ══ */
+.sheet { position: relative; max-width: 872px; margin: 14px auto 44px; background: var(--sheet-bg); border: 1px solid var(--sheet-rule); padding: 46px 62px 60px; }
+.sheet ::selection { background: var(--acc); color: var(--sheet-bg); }
+/* src mode strips the book back to the terminal ground */
+.sheet.src { background: var(--bg); border-style: dashed; border-color: var(--border-strong); }
+
+/* ── index masthead — pixel stamp + serif deck ───────────────── */
+.idx-mast { padding-bottom: 26px; border-bottom: 1px solid var(--sheet-rule); }
+.idx-title { font-family: var(--pixel-line); font-size: 33px; font-weight: 400; line-height: 1.1; letter-spacing: 0; color: var(--sheet-ink); font-synthesis: none; }
+.idx-sub { font-family: var(--sheet-serif); font-size: 15.5px; font-style: italic; line-height: 1.5; color: var(--sheet-soft); margin-top: 10px; }
+.idx-meta { display: flex; gap: 12px; flex-wrap: wrap; font-family: var(--mono); font-size: 11px; color: var(--faint); margin-top: 16px; }
+.idx-meta .accent { color: var(--acc); }
+.idx-meta .dot { color: var(--border-strong); }
+
+/* ── editorial index — serif titles, ordinal rail, hairlines ─── */
+.post-list { display: flex; flex-direction: column; }
+a.post-row { display: block; width: 100%; text-align: left; padding: 27px 10px 26px; border-top: 1px solid var(--sheet-rule); text-decoration: none; }
+a.post-row:first-child { border-top: 0; }
+a.post-row:hover { background: color-mix(in srgb, var(--acc) 4%, transparent); }
+.pr-line1 { display: flex; align-items: baseline; gap: 16px; }
+.pr-n { flex: none; width: 20px; font-family: var(--mono); font-size: 11px; color: var(--sheet-faint); font-variant-numeric: tabular-nums; }
+.pr-title { flex: 1; min-width: 0; font-family: var(--sheet-serif); font-size: 19.5px; font-weight: 600; line-height: 1.35; color: var(--sheet-ink); text-wrap: balance; }
+a.post-row:hover .pr-title { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--acc) 70%, transparent); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.pr-chip { flex: none; align-self: center; }
+.draft-chip { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border: 1px dashed color-mix(in srgb, var(--acc) 60%, var(--border-strong)); color: var(--acc); background: color-mix(in srgb, var(--acc) 7%, transparent); white-space: nowrap; }
+.pr-desc { display: block; font-family: var(--sheet-serif); font-size: 15px; line-height: 1.55; color: var(--sheet-soft); margin: 8px 0 0 36px; max-width: 62ch; }
+.pr-meta { display: block; font-family: var(--mono); font-size: 11px; color: var(--faint); margin: 11px 0 0 36px; letter-spacing: 0.01em; }
+.pr-meta .d { color: var(--muted); font-variant-numeric: tabular-nums; }
+.pr-meta .tg { color: color-mix(in srgb, var(--acc) 55%, var(--muted)); }
+.pr-meta .dot { color: var(--border-strong); padding: 0 5px; }
+
+.idx-foot { border-top: 1px solid var(--sheet-rule); padding: 18px 10px 0; font-family: var(--mono); font-size: 10.5px; color: var(--faint); text-align: center; }
+.idx-foot .accent { color: var(--acc); }
+
+/* ── empty state — box-drawing meets serif (day-one production) ─ */
+.empty { text-align: center; padding: 48px 20px 34px; color: var(--muted); }
+.empty .eg { font-family: var(--mono); font-size: 12px; line-height: 1.3; color: var(--sheet-faint); white-space: pre; margin-bottom: 24px; }
+.empty .eg .accent { color: var(--acc); }
+.empty .e1 { font-family: var(--sheet-serif); font-size: 17px; font-style: italic; color: var(--sheet-ink); }
+.empty .e2 { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+.empty .e2 .accent { color: var(--acc); }
+
+/* ══ READER — book typography, wide measure ══ */
+.reader-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 30px; font-family: var(--mono); font-size: 11px; }
+.reader-back { color: var(--muted); white-space: nowrap; flex: none; text-decoration: none; }
+.reader-back:hover { color: var(--text); }
+.reader-back .accent { color: var(--acc); }
+.reader-file { color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+.draft-rib { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--acc); border-bottom: 1px dashed color-mix(in srgb, var(--acc) 45%, transparent); padding-bottom: 10px; margin-bottom: 26px; }
+.draft-rib .rn { color: var(--muted); letter-spacing: 0.04em; text-transform: none; }
+
+/* the pixel masthead — the one continuity thread on both skins */
+.post-title { font-family: var(--pixel-line); font-size: 40px; font-weight: 400; line-height: 1.12; letter-spacing: 0; color: var(--sheet-ink); font-synthesis: none; text-wrap: balance; }
+.post-deck { font-family: var(--sheet-serif); font-size: 17px; font-style: italic; line-height: 1.6; color: var(--sheet-soft); margin-top: 16px; max-width: 60ch; }
+.post-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 18px; }
+.post-meta .sepdot { color: var(--border-strong); }
+.post-meta .mtag { font-size: 10px; padding: 2px 8px; border: 1px solid var(--border-strong); color: var(--muted); white-space: nowrap; }
+
+/* ── markdown body — serif at ~88ch; mono only where the terminal
+     bleeds through (code, checkboxes, captions) ────────────────── */
+.md { font-family: var(--sheet-serif); font-size: 17.5px; line-height: 1.7; color: var(--sheet-ink); margin-top: 34px; max-width: 88ch; font-variant-numeric: oldstyle-nums; }
+.md p { margin: 0 0 21px; }
+.md em { font-style: italic; }
+.md strong { font-weight: 600; }
+.md a { color: var(--sheet-ink); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--acc) 65%, transparent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.md a:hover { color: var(--acc); }
+.md h1 { font-size: 27px; font-weight: 600; line-height: 1.25; margin: 42px 0 16px; scroll-margin-top: 18px; }
+.md h2 { font-size: 23px; font-weight: 600; line-height: 1.3; margin: 42px 0 16px; scroll-margin-top: 18px; letter-spacing: -0.005em; }
+.md h3 { font-size: 19px; font-weight: 600; line-height: 1.35; margin: 32px 0 12px; scroll-margin-top: 18px; }
+.md hr { border: 0; margin: 34px 0; text-align: center; }
+.md hr::before { content: "· · ·"; color: var(--sheet-faint); font-family: var(--sheet-serif); letter-spacing: 10px; font-size: 15px; }
+.md blockquote { margin: 30px 0; padding: 2px 6px 2px 24px; border-left: 2px solid var(--acc); }
+.md blockquote p { font-size: 20px; font-style: italic; line-height: 1.55; color: var(--sheet-ink); margin: 0 0 10px; }
+.md blockquote p:last-child { margin-bottom: 0; }
+.md ul, .md ol { margin: 0 0 21px; padding-left: 1.5em; }
+.md li { margin: 8px 0; }
+.md li::marker { color: var(--sheet-faint); }
+
+/* code sinks to the terminal ground on both skins */
+.md pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.7; border: 1px solid var(--border); background: var(--bg); color: var(--text); padding: 16px 18px; margin: 26px 0; overflow-x: auto; font-variant-numeric: normal; }
+.md pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+.md code { font-family: var(--mono); }
+.md p code, .md li code, .md h2 code, .md h3 code { font-size: 13px; padding: 1px 5px; border: 1px solid var(--sheet-rule); background: var(--bg); color: var(--text); font-variant-numeric: normal; }
+
+/* GFM task lists speak mono (marker drawn on the li — pseudo-elements
+   on <input> don't render in Firefox) */
+.md li:has(> input[type="checkbox"]) { list-style: none; display: block; margin: 10px 0; }
+/* marker inline so anchors/text fragments stay in one flowing line */
+.md ul:has(> li > input[type="checkbox"]) { padding-left: 0; }
+.md li > input[type="checkbox"] { display: none; }
+.md li:has(> input[type="checkbox"])::before { content: "[ ]"; font-family: var(--mono); font-size: 13px; color: var(--faint); display: inline-block; margin-right: 12px; }
+.md li:has(> input[type="checkbox"]:checked)::before { content: "[x]"; color: var(--acc); }
+.md li:has(> input[type="checkbox"]:not(:checked)) { color: var(--sheet-soft); }
+
+/* tables (GFM) fall back to the terminal voice */
+.md table { border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; margin: 26px 0; display: block; max-width: 100%; overflow-x: auto; font-variant-numeric: normal; }
+.md th, .md td { border: 1px solid var(--sheet-rule); padding: 6px 10px; text-align: left; }
+.md th { color: var(--sheet-soft); font-weight: 600; }
+
+/* plain markdown images */
+.md img { max-width: 100%; height: auto; }
+
+/* Obsidian ![[wikilink]] embeds — bookplates with terminal edges */
+.post-embed { margin: 26px 0; border: 1px solid var(--sheet-rule); }
+.post-embed img { display: block; width: 100%; height: auto; }
+.post-embed figcaption { font-family: var(--mono); font-size: 10.5px; line-height: 1.5; color: var(--muted); padding: 8px 12px 9px; border-top: 1px solid var(--sheet-rule); }
+.post-embed-missing { border: 1px dashed var(--border-strong); }
+.post-embed-frame { min-height: 180px; display: grid; place-items: center; align-content: center; gap: 8px; padding: 26px 16px; font-family: var(--mono); font-size: 11px; color: var(--faint); background: var(--bg); background-image: repeating-conic-gradient(color-mix(in srgb, var(--text) 2.5%, transparent) 0% 25%, transparent 0% 50%); background-size: 4px 4px; text-align: center; }
+.post-embed-frame > span:first-child { color: color-mix(in srgb, var(--acc) 60%, var(--muted)); background: var(--bg); padding: 2px 8px; }
+.post-embed-frame .post-embed-note { background: var(--bg); padding: 2px 8px; }
+
+/* the end mark */
+.endmark { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-top: 40px; }
+.endmark .accent { color: var(--acc); }
+
+/* ══ SOURCE MODE — the book stripped back to markdown ══ */
+.src-note { font-family: var(--mono); font-size: 10.5px; color: var(--faint); border: 1px dashed var(--border-strong); padding: 8px 12px; margin-bottom: 22px; }
+.src-note .accent { color: var(--acc); }
+.srcmd { font-family: var(--mono); font-size: 12.5px; line-height: 1.8; color: color-mix(in srgb, var(--text) 68%, var(--muted)); white-space: pre-wrap; overflow-wrap: break-word; margin: 0; }
+.srcmd .y { color: var(--faint); }
+.srcmd .yv { color: var(--muted); }
+.srcmd .hot { color: var(--acc); font-weight: 600; }
+
+/* ── reading progress — docked above the status bar ──────────── */
+.readprog { position: fixed; right: 14px; bottom: calc(var(--status-h) + 10px); z-index: 30; display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border-strong); padding: 4px 10px; font-family: var(--mono); font-size: 10.5px; color: var(--faint); max-width: min(60vw, 340px); }
+.readprog .sec { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.readprog .rp-bar { width: 66px; height: 7px; border: 1px solid var(--border-strong); padding: 1px; flex: none; }
+.readprog .rp-fill { display: block; height: 100%; background: repeating-linear-gradient(90deg, var(--acc) 0 4px, transparent 4px 6px); }
+.readprog .rp-pct { font-variant-numeric: tabular-nums; flex: none; }
+
+/* ── mobile: the sheet goes full-width, everything stacks ────── */
+@media (max-width: 860px) {
+  .tpane { padding: 14px 8px 20px; }
+  .sheet { padding: 26px 18px 40px; margin: 10px auto 24px; }
+  .pr-line1 { display: block; }
+  .pr-n { display: none; }
+  .pr-chip { display: inline-block; margin-top: 9px; }
+  .pr-desc, .pr-meta { margin-left: 0; }
+  a.post-row { padding: 22px 2px 20px; }
+  .post-title { font-size: 30px; }
+  .md { font-size: 16.5px; }
+  .reader-top { flex-wrap: wrap; }
+  /* status bar is 44px tall down here */
+  .readprog { right: 8px; bottom: 52px; }
+  /* finger-sized chrome — undo globals' generic notch-button expansion,
+     which would blow the chip apart (background: none, -14px margins) */
+  .notch.nr button.mode-chip { padding: 6px 10px; margin: 0; background: var(--bg); }
+  .tpane > .notch.nr a { padding: 8px 6px; margin: -8px -6px; }
+}

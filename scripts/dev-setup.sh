@@ -10,28 +10,33 @@ set -e
 cd "$(dirname "$0")/.."
 
 MODE="${1:-symlink}"
-CLONE="${2:-$HOME/information/portfolio}"
+INFO_DIR="${2:-$HOME/information}"
 
 git config core.hooksPath .githooks
 echo "core.hooksPath -> .githooks"
 
 case "$MODE" in
   symlink)
-    if [ ! -d "$CLONE" ]; then
-      echo "ERROR: $CLONE does not exist; clone DIodide/portfolio there first or pass its path." >&2
-      exit 1
-    fi
-    git submodule deinit -f content/portfolio 2>/dev/null || true
-    rm -rf content/portfolio .git/modules/content
-    ln -s "$CLONE" content/portfolio
-    git update-index --skip-worktree content/portfolio
-    echo "content/portfolio -> $CLONE (skip-worktree set)"
+    for name in portfolio thoughts; do
+      CLONE="$INFO_DIR/$name"
+      if [ ! -d "$CLONE" ]; then
+        echo "WARN: $CLONE does not exist; clone DIodide/$name there for the symlink setup." >&2
+        continue
+      fi
+      git submodule deinit -f "content/$name" 2>/dev/null || true
+      rm -rf "content/$name" ".git/modules/content/$name"
+      ln -s "$CLONE" "content/$name"
+      git update-index --skip-worktree "content/$name"
+      echo "content/$name -> $CLONE (skip-worktree set)"
+    done
     ;;
   submodule)
-    git update-index --no-skip-worktree content/portfolio 2>/dev/null || true
-    if [ -L content/portfolio ]; then rm content/portfolio; fi
-    git submodule update --init content/portfolio
-    echo "content/portfolio checked out as a real submodule"
+    for name in portfolio thoughts; do
+      git update-index --no-skip-worktree "content/$name" 2>/dev/null || true
+      if [ -L "content/$name" ]; then rm "content/$name"; fi
+      git submodule update --init "content/$name"
+      echo "content/$name checked out as a real submodule"
+    done
     ;;
   *)
     echo "Usage: $0 [symlink|submodule] [path-to-existing-clone]" >&2

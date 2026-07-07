@@ -4,8 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import LinkGuard from "@/components/LinkGuard";
 import MuxController from "@/components/MuxController";
-import Sidebar from "@/components/Sidebar";
-import StatusBar from "@/components/StatusBar";
+import SurfaceStrip from "@/components/SurfaceStrip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +35,26 @@ const iosevka = localFont({
   src: "../fonts/iosevka-latin-400-normal.woff2",
   variable: "--font-iosevka",
   weight: "400",
+});
+
+// Thought-sandboxes reading faces (SIL OFL, see src/fonts/LICENSES.md):
+// Literata = the dark "book" skin, STIX Two Text = the light "paper" skin.
+const literata = localFont({
+  src: [
+    { path: "../fonts/literata-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/literata-latin-400-italic.woff2", weight: "400", style: "italic" },
+    { path: "../fonts/literata-latin-600-normal.woff2", weight: "600", style: "normal" },
+  ],
+  variable: "--font-literata",
+});
+
+const stix = localFont({
+  src: [
+    { path: "../fonts/stix-two-text-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/stix-two-text-latin-400-italic.woff2", weight: "400", style: "italic" },
+    { path: "../fonts/stix-two-text-latin-700-normal.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-stix",
 });
 
 const SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -72,13 +91,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${pixelLine.variable} ${pixelSquare.variable} ${iosevka.variable} antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${pixelLine.variable} ${pixelSquare.variable} ${iosevka.variable} ${literata.variable} ${stix.variable} antialiased`}
     >
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
-        <Sidebar />
-        <main className="main">{children}</main>
-        <StatusBar />
+        <SurfaceStrip />
+        {children}
         <MuxController />
         <LinkGuard />
       </body>

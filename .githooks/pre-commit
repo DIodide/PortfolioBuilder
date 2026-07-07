@@ -1,13 +1,15 @@
 #!/bin/sh
-# Guardrail: content/portfolio must stay a gitlink (submodule, mode 160000).
-# Locally the path is a symlink to ~/information/portfolio (hidden via skip-worktree);
-# if that symlink ever gets force-staged it would replace the submodule for everyone.
-mode=$(git ls-files -s --cached -- content/portfolio | awk '{print $1}')
-if [ -n "$mode" ] && [ "$mode" != "160000" ]; then
-  echo "ERROR: content/portfolio is staged as mode $mode instead of a submodule gitlink (160000)." >&2
-  echo "Its local symlink was probably force-added. Fix with:" >&2
-  echo "  git restore --staged content/portfolio" >&2
-  echo "  git update-index --skip-worktree content/portfolio" >&2
-  exit 1
-fi
+# Guardrail: content submodule paths must stay gitlinks (mode 160000).
+# Locally they are symlinks to ~/information/* (hidden via skip-worktree);
+# if a symlink ever gets force-staged it would replace the submodule for everyone.
+for p in content/portfolio content/thoughts; do
+  mode=$(git ls-files -s --cached -- "$p" | awk '{print $1}')
+  if [ -n "$mode" ] && [ "$mode" != "160000" ]; then
+    echo "ERROR: $p is staged as mode $mode instead of a submodule gitlink (160000)." >&2
+    echo "Its local symlink was probably force-added. Fix with:" >&2
+    echo "  git restore --staged $p" >&2
+    echo "  git update-index --skip-worktree $p" >&2
+    exit 1
+  fi
+done
 exit 0
