@@ -21,11 +21,17 @@ export interface ContentDoc {
   body: string;
 }
 
+/** HTML comments are the content repo's annotation channel — Obsidian hides
+ *  them in reading view and the site guarantees they never render. Strip them
+ *  before ANY parsing so editors can write notes anywhere (except inside a
+ *  pipe table, where a comment line would split the table). */
+const stripHtmlComments = (s: string) => s.replace(/<!--[\s\S]*?-->/g, "");
+
 export function readDoc(relPath: string): ContentDoc | null {
   const abs = path.join(CONTENT_DIR, relPath);
   if (!fs.existsSync(abs)) return null;
   const { data, content } = matter(fs.readFileSync(abs, "utf8"));
-  return { path: relPath, frontmatter: data, body: content.trim() };
+  return { path: relPath, frontmatter: data, body: stripHtmlComments(content).trim() };
 }
 
 export const getUser = () => readDoc("USER.md");
