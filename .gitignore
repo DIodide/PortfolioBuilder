@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# build-time mirror of content images
+/public/content-art/
+
+# build-time content snapshot
+/.content/

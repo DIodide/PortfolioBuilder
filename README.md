@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PortfolioBuilder
 
-## Getting Started
+Next.js site that builds itself from the content in the private
+[DIodide/portfolio](https://github.com/DIodide/portfolio) repo. Content stays in
+its own private repo; this public repo holds only the site code.
 
-First, run the development server:
+## Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+DIodide/portfolio (private)          DIodide/PortfolioBuilder (public)
+  markdown + YAML frontmatter   ──►    submodule at content/portfolio
+  portfolio-art/ images                scripts/prepare-content.mjs snapshots it
+  code/ submodules (ignored)           src/lib/content.ts parses the snapshot
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `scripts/prepare-content.mjs` runs before every `dev`/`build`. It materializes
+  the content into `.content/portfolio` (real files — locally the submodule path
+  is a symlink, which bundler tracing can't follow) and mirrors every
+  `portfolio-art/` image to `public/content-art/<same relative path>`.
+- On Vercel the private submodule can't be fetched, so the script shallow-clones
+  `portfolio@main` with `CONTENT_REPO_TOKEN` instead. **Deploys always build the
+  latest content on `main`** — the submodule pointer is a local-dev convenience,
+  not the deploy source of truth. Nested `code/` submodules are never fetched.
+- `src/lib/content.ts` exposes frontmatter + raw body per document. Shaping and
+  UI are intentionally not built yet.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Redeploys
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Push to **PortfolioBuilder** → Vercel git integration deploys.
+- Push to **portfolio** → its `redeploy-site.yml` workflow curls a Vercel deploy
+  hook (stored as the `VERCEL_DEPLOY_HOOK_URL` secret in that repo).
 
-## Learn More
+## Local setup
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+pnpm install
+scripts/dev-setup.sh                 # symlink mode: uses ~/information/portfolio
+# or: scripts/dev-setup.sh submodule # real checkout (needs access to the private repo)
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`dev-setup.sh` also sets `core.hooksPath` to `.githooks`, whose pre-commit hook
+blocks committing anything but a gitlink at `content/portfolio`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### The symlink/submodule arrangement
 
-## Deploy on Vercel
+`content/portfolio` is tracked in git as a submodule, but in symlink mode the
+working-tree path is a symlink to your existing clone, hidden from git via
+`git update-index --skip-worktree`. Don't `git add --force content/portfolio`;
+if the path ever shows up as modified, re-run `scripts/dev-setup.sh`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Vercel environment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Variable | Purpose |
+| --- | --- |
+| `CONTENT_REPO_TOKEN` | Fine-grained GitHub PAT, read-only **Contents** access to `DIodide/portfolio` only. Used to clone content at build time. |
+| `CONTENT_BRANCH` (optional) | Content branch to build, default `main`. |
