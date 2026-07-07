@@ -59,12 +59,20 @@ const namesHost = (label: string, url: string) => {
   }
 };
 
-function ProjectEntry({ p, first }: { p: CourseworkProject; first: boolean }) {
+function ProjectEntry({
+  p,
+  registrar,
+  first,
+}: {
+  p: CourseworkProject;
+  /** registrar URL for this entry's course, when COURSEWORK.md has one */
+  registrar?: string;
+  first: boolean;
+}) {
   const prose = p.paragraphs[0] ? clampProse(p.paragraphs[0]) : null;
   const meta = [p.courseTitle, p.semester, p.team && `team: ${p.team}`].filter(
     Boolean,
   );
-  const hidden = p.highlights.length - MAX_HIGHLIGHTS;
   return (
     <article
       style={
@@ -76,9 +84,24 @@ function ProjectEntry({ p, first }: { p: CourseworkProject; first: boolean }) {
       <div
         style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}
       >
-        <span className="ccode" title={p.course}>
-          {shortCode(p.course)}
-        </span>
+        {registrar ? (
+          // same chip as the cal pane above — code label doesn't name the
+          // registrar host, so the confirm modal guards the jump
+          <a
+            className="ccode"
+            href={registrar}
+            title={p.course}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-confirm=""
+          >
+            {shortCode(p.course)}
+          </a>
+        ) : (
+          <span className="ccode" title={p.course}>
+            {shortCode(p.course)}
+          </span>
+        )}
         <span style={{ fontSize: 12.5, fontWeight: 600 }}>{p.title}</span>
       </div>
       {meta.length > 0 && (
@@ -98,6 +121,8 @@ function ProjectEntry({ p, first }: { p: CourseworkProject; first: boolean }) {
           </p>
         )
       )}
+      {/* overflow past the caps truncates silently — no "+n" affordance,
+          since there is nowhere to see the hidden items */}
       {p.highlights.slice(0, MAX_HIGHLIGHTS).map((h) => (
         <p key={h} style={{ display: "flex", gap: 6, fontSize: 12, marginTop: 5 }}>
           <span className="accent" style={{ flex: "none" }}>
@@ -106,11 +131,6 @@ function ProjectEntry({ p, first }: { p: CourseworkProject; first: boolean }) {
           <span className="dim">{h}</span>
         </p>
       ))}
-      {hidden > 0 && (
-        <p className="faint" style={{ fontSize: 11, marginTop: 3, paddingLeft: 14 }}>
-          +{hidden} more
-        </p>
-      )}
       {p.skills.length > 0 && (
         <div className="chips" style={{ margin: "8px 0 0" }}>
           {p.skills.slice(0, MAX_SKILL_CHIPS).map((s) => (
@@ -118,16 +138,6 @@ function ProjectEntry({ p, first }: { p: CourseworkProject; first: boolean }) {
               {s}
             </span>
           ))}
-          {p.skills.length > MAX_SKILL_CHIPS && (
-            <span
-              className="chip"
-              // .chip's color wins the cascade over .faint; force the tint
-              style={{ color: "var(--faint)" }}
-              title={p.skills.slice(MAX_SKILL_CHIPS).join(", ")}
-            >
-              +{p.skills.length - MAX_SKILL_CHIPS}
-            </span>
-          )}
         </div>
       )}
       {p.links.length > 0 && (
@@ -167,107 +177,140 @@ export default function Coursework() {
     ...all.filter((p) => p.placeholder),
   ];
 
+  // course code → registrar URL, keyed by the full course string
+  // ("HIS 387 / ENG 389 / CDH 387") and by its first code token as a
+  // fallback, so project entries link out exactly like the cal chips
+  const registrar = new Map<string, string>();
+  for (const c of courses) {
+    if (!c.link || c.code === "TODO") continue;
+    if (!registrar.has(c.code)) registrar.set(c.code, c.link);
+    const short = shortCode(c.code);
+    if (!registrar.has(short)) registrar.set(short, c.link);
+  }
+  const registrarFor = (course: string) =>
+    registrar.get(course) ?? registrar.get(shortCode(course));
+
   return (
-    <div
-      className="machine fill ws-course"
-      data-acc="course"
-      // the projects pane carries prose now; trade tree width for it
-      style={{ gridTemplateColumns: "1fr 1.25fr" }}
-    >
-      <Pane
-        cmd={span ? `cal ${span}` : "cal"}
-        sub={`· ${semesters.length} semesters · ${courses.length} courses`}
-        label="semester calendar"
-        gridArea="cal"
-      >
-        {semesters.map((sem) => (
-          <div key={sem} className="cal-row">
-            <span className="sem">{shortSemester(sem)} ▸</span>
-            {courses
-              .filter((c) => c.semester === sem)
-              .map((c) =>
-                c.code === "TODO" ? (
-                  <span key={c.name} className="ccode todo" title={c.name}>
-                    ——— {c.name.toLowerCase()}
-                  </span>
-                ) : c.link ? (
-                  <a
-                    key={c.code}
-                    className="ccode"
-                    href={c.link}
-                    title={c.name}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-confirm=""
-                  >
-                    {c.code}
-                  </a>
-                ) : (
-                  <span key={c.code} className="ccode" title={c.name}>
-                    {c.code}
-                  </span>
-                ),
-              )}
-          </div>
-        ))}
-      </Pane>
-
-      <Pane cmd="tree ~/coursework" label="coursework tree" gridArea="tree">
-        <pre className="block">
-          {"~/coursework\n"}
-          {sections.map((sec, i) => {
-            const lastDir = i === sections.length - 1;
-            const stem = lastDir ? "    " : "│   ";
-            return (
-              <span key={sec.category}>
-                {lastDir ? "└── " : "├── "}
-                <span className="accent">{dirName(sec.category)}/</span>
-                {"\n"}
-                {sec.courses.map((c, j) => {
-                  const branch = j === sec.courses.length - 1 ? "└── " : "├── ";
-                  const todo = c.code === "TODO";
-                  return (
-                    <span
-                      key={c.code + c.name}
-                      className={todo ? "faint" : "dim"}
-                    >
-                      {stem + branch}
-                      {(todo ? "———" : shortCode(c.code)).padEnd(9)}
-                      {shortName(c.name)}
-                      {"\n"}
-                    </span>
-                  );
-                })}
-              </span>
-            );
-          })}
-          {"\n"}
-          <span className="dim">
-            {sections.length} directories, {courses.length} courses
-          </span>
-        </pre>
-      </Pane>
-
-      <Pane
-        cmd="cat COURSEWORK_PROJECTS.md"
-        sub={
-          projects.length
-            ? `· ${projects.length} project${projects.length === 1 ? "" : "s"}`
-            : undefined
+    <>
+      <style>{`
+        @media (max-width: 860px) {
+          /* ccode chips are links (~22px tall); grow the touch target to
+             ~40px with invisible hit-slop instead of resizing the chip */
+          .ws-course a.ccode { position: relative; }
+          .ws-course a.ccode::after { content: ""; position: absolute; inset: -9px -3px; }
+          .ws-course .cal-row { gap: 12px 8px; }
+          /* todo chips carry full course names; ellipsize instead of
+             pushing the page sideways on narrow screens */
+          .ws-course .ccode.todo { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
         }
-        label="course projects"
-        gridArea="proj"
+      `}</style>
+      <div
+        className="machine fill ws-course"
+        data-acc="course"
+        // the projects pane carries prose now; trade tree width for it
+        // (mobile: globals' 1fr !important out-cascades this inline style)
+        style={{ gridTemplateColumns: "1fr 1.25fr" }}
       >
-        {projects.length === 0 ? (
-          <p className="red">
-            cat: COURSEWORK_PROJECTS.md: no such file or directory
-          </p>
-        ) : (
-          projects.map((p, i) => (
-            <ProjectEntry key={p.course + p.title} p={p} first={i === 0} />
-          ))
-        )}
-      </Pane>
-    </div>
+        <Pane
+          cmd={span ? `cal ${span}` : "cal"}
+          sub={`· ${semesters.length} semesters · ${courses.length} courses`}
+          label="semester calendar"
+          gridArea="cal"
+        >
+          {semesters.map((sem) => (
+            <div key={sem} className="cal-row">
+              <span className="sem">{shortSemester(sem)} ▸</span>
+              {courses
+                .filter((c) => c.semester === sem)
+                .map((c) =>
+                  c.code === "TODO" ? (
+                    <span key={c.name} className="ccode todo" title={c.name}>
+                      ——— {c.name.toLowerCase()}
+                    </span>
+                  ) : c.link ? (
+                    <a
+                      key={c.code}
+                      className="ccode"
+                      href={c.link}
+                      title={c.name}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-confirm=""
+                    >
+                      {c.code}
+                    </a>
+                  ) : (
+                    <span key={c.code} className="ccode" title={c.name}>
+                      {c.code}
+                    </span>
+                  ),
+                )}
+            </div>
+          ))}
+        </Pane>
+
+        <Pane cmd="tree ~/coursework" label="coursework tree" gridArea="tree">
+          <pre className="block">
+            {"~/coursework\n"}
+            {sections.map((sec, i) => {
+              const lastDir = i === sections.length - 1;
+              const stem = lastDir ? "    " : "│   ";
+              return (
+                <span key={sec.category}>
+                  {lastDir ? "└── " : "├── "}
+                  <span className="accent">{dirName(sec.category)}/</span>
+                  {"\n"}
+                  {sec.courses.map((c, j) => {
+                    const branch = j === sec.courses.length - 1 ? "└── " : "├── ";
+                    const todo = c.code === "TODO";
+                    return (
+                      <span
+                        key={c.code + c.name}
+                        className={todo ? "faint" : "dim"}
+                      >
+                        {stem + branch}
+                        {(todo ? "———" : shortCode(c.code)).padEnd(9)}
+                        {shortName(c.name)}
+                        {"\n"}
+                      </span>
+                    );
+                  })}
+                </span>
+              );
+            })}
+            {"\n"}
+            <span className="dim">
+              {sections.length} directories, {courses.length} courses
+            </span>
+          </pre>
+        </Pane>
+
+        <Pane
+          cmd="cat COURSEWORK_PROJECTS.md"
+          sub={
+            projects.length
+              ? `· ${projects.length} project${projects.length === 1 ? "" : "s"}`
+              : undefined
+          }
+          label="course projects"
+          gridArea="proj"
+        >
+          {projects.length === 0 ? (
+            <p className="red">
+              cat: COURSEWORK_PROJECTS.md: no such file or directory
+            </p>
+          ) : (
+            projects.map((p, i) => (
+              <ProjectEntry
+                key={p.course + p.title}
+                p={p}
+                registrar={registrarFor(p.course)}
+                first={i === 0}
+              />
+            ))
+          )}
+        </Pane>
+      </div>
+    </>
   );
 }

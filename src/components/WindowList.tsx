@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export const WINDOWS = [
-  { acc: "home", href: "/", label: "1:home" },
-  { acc: "work", href: "/work", label: "2:work" },
-  { acc: "proj", href: "/projects", label: "3:projects" },
-  { acc: "cert", href: "/certifications", label: "4:certs" },
-  { acc: "course", href: "/coursework", label: "5:coursework" },
+  { acc: "home", href: "/", label: "1:home", short: "1:home" },
+  { acc: "work", href: "/work", label: "2:work", short: "2:work" },
+  { acc: "proj", href: "/projects", label: "3:projects", short: "3:proj" },
+  { acc: "cert", href: "/certifications", label: "4:certs", short: "4:certs" },
+  { acc: "course", href: "/coursework", label: "5:coursework", short: "5:courses" },
 ];
 
 export function WindowList() {
@@ -28,7 +28,8 @@ export function WindowList() {
             data-acc={w.acc}
             aria-current={pathname === w.href ? "page" : undefined}
           >
-            {w.label}
+            <span className="wlbl-full">{w.label}</span>
+            <span className="wlbl-short">{w.short}</span>
             {pathname === w.href ? "*" : ""}
           </Link>
         ))}

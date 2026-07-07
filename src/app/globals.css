@@ -277,18 +277,27 @@ a.ccode:hover { border-color: var(--acc); }
 .keys-panel td:first-child { color: var(--acc-home); width: 90px; }
 
 /* ── mobile: even-vertical relayout ──────────────────────────── */
+.wlbl-short { display: none; }
 @media (max-width: 860px) {
   body { grid-template-columns: 1fr; grid-template-rows: 1fr 44px; grid-template-areas: "main" "status"; }
   .sidebar { display: none; }
   .main { padding: 8px; }
   .machine, .ws-home, .ws-work, .ws-course { display: grid; grid-template-columns: 1fr !important; grid-template-areas: none !important; grid-template-rows: none !important; height: auto; }
   .machine > .pane, .stack .pane { grid-area: auto !important; }
-  .pane .scroll { height: auto; max-height: none; overflow: visible; }
+  .pane .scroll { height: auto; max-height: none; overflow: visible; padding: 16px 14px 20px; }
   .collage-row { flex-direction: column; min-height: 0; }
   .collage-row .pane:hover, .collage-row .pane:focus-within { flex-grow: 1; }
   .pane.zoom { left: 0; bottom: 45px; }
   .pane.zoom .scroll { height: 100%; overflow: auto; }
-  .status { padding: 0 6px; }
-  .wlist a { padding: 12px 6px; }
+  /* status bar: single row, horizontally scrollable, short window labels */
+  .status { padding: 0 6px; gap: 6px; }
+  .status .lft { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .wlist { flex-wrap: nowrap; }
+  .wlist a { padding: 12px 5px; font-size: 10.5px; }
+  .sess { padding: 1px 5px; font-size: 10px; }
+  .wlbl-full { display: none; }
+  .wlbl-short { display: inline; }
+  /* deck/window tab bars scroll instead of wrapping */
+  .tabbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
   .hidesm { display: none !important; }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import Lightbox from "@/components/Lightbox";
 import Pane from "@/components/Pane";
 import type { Workplace, WorkRow } from "@/lib/content";
 
@@ -130,7 +131,15 @@ function renderBlocks(blocks: Block[]): ReactNode[] {
 
 /* ── brief pane (gridArea: hi) ───────────────────────────────── */
 
+// strip images open in the Lightbox; the button keeps the .strip img
+// look (min 40px tap target even for very wide shots)
+const STRIP_CSS = `
+.strip-zoom { display: grid; align-items: center; width: 100%; min-height: 40px; padding: 0; cursor: zoom-in; }
+.strip-zoom:hover img, .strip-zoom:focus-visible img { border-color: var(--acc); }
+`;
+
 function Brief({ wp, onOwn }: { wp: Workplace; onOwn: () => void }) {
+  const [shot, setShot] = useState<{ src: string; alt: string } | null>(null);
   const secs = wp.sections
     .map((s) => ({ heading: s.heading, blocks: cleanSection(s.content) }))
     .filter((s) => s.blocks.length > 0);
@@ -243,17 +252,33 @@ function Brief({ wp, onOwn }: { wp: Workplace; onOwn: () => void }) {
 
       {wp.images.length > 0 && (
         <div className="strip" style={{ marginTop: 14 }}>
+          <style>{STRIP_CSS}</style>
           {wp.images.map((src) => {
             const file = src.split("/").pop() ?? src;
             const base = file.replace(/\.[^.]+$/, "");
+            const alt = `${wp.company} — ${base}`;
             return (
               <figure key={src} style={{ flex: "0 0 120px" }}>
-                <img src={src} alt={`${wp.company} — ${base}`} loading="lazy" />
+                <button
+                  type="button"
+                  className="strip-zoom"
+                  aria-label={`view ${alt}`}
+                  onClick={() => setShot({ src, alt })}
+                >
+                  <img src={src} alt={alt} loading="lazy" />
+                </button>
                 <figcaption>{file}</figcaption>
               </figure>
             );
           })}
         </div>
+      )}
+      {shot && (
+        <Lightbox
+          src={shot.src}
+          alt={shot.alt}
+          onClose={() => setShot(null)}
+        />
       )}
       </div>
     </Pane>

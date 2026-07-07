@@ -495,7 +495,7 @@ function parseProjectBlock(
     } else if (/^\(?todo/i.test(t)) {
       flush();
       project.placeholder = true;
-    } else if (/^(repos?|course notebook|links?):/i.test(t)) {
+    } else if (/^(repos?|course notebook|links?|deployed|demo|site):/i.test(t)) {
       flush();
       project.links.push(...lineLinks(t));
     } else if (/^team:/i.test(t)) {

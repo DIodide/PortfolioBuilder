@@ -35,7 +35,9 @@ const firstSentence = (s: string) =>
 
 const startYear = (p: Project) => Number(p.period.match(/\d{4}/)?.[0] ?? 0);
 
-/** Collage panes get squeezed by the hover trade, so cap visible chips. */
+/** Collage panes get squeezed by the hover trade, so cap visible chips.
+ *  Anything past the cap is silently dropped — no "+n" affordance, since
+ *  there is no way on this page to reveal the hidden chips. */
 const MAX_CARD_CHIPS = 4;
 
 /** tmux window name: filename minus directory, extension, project prefix. */
@@ -118,16 +120,6 @@ function ProjectCard({ p }: { p: Project }) {
               {t}
             </span>
           ))}
-          {p.tech.length > MAX_CARD_CHIPS && (
-            <span
-              className="chip faint"
-              // .chip's color wins the cascade over .faint; force the tint
-              style={{ color: "var(--faint)" }}
-              title={p.tech.slice(MAX_CARD_CHIPS).join(", ")}
-            >
-              +{p.tech.length - MAX_CARD_CHIPS}
-            </span>
-          )}
         </div>
       )}
       <div className="links">
@@ -169,9 +161,15 @@ export default function Projects() {
       <style>{`
         .proj-split-info { background: var(--bg); padding: 2px 20px 8px 0; min-width: 0; }
         .proj-split-deck { background: var(--bg); padding: 2px 0 0 20px; min-width: 0; }
+        /* long repo/host names wrap instead of pushing a pane sideways */
+        [data-acc="proj"] .links a { overflow-wrap: anywhere; }
         @media (max-width: 860px) {
-          .proj-split-info { padding: 2px 0 16px; }
-          .proj-split-deck { padding: 14px 0 0; }
+          /* stacked featured split: screenshots first, prose below the line */
+          .proj-split-deck { order: -1; padding: 2px 0 16px; }
+          .proj-split-info { padding: 14px 0 4px; }
+          /* finger-sized link rows: 12px text + 11px padding ≈ 40px tall */
+          [data-acc="proj"] .links { align-items: center; }
+          [data-acc="proj"] .links a { padding: 11px 0; }
         }
       `}</style>
       <div className="stack grow" data-acc="proj">

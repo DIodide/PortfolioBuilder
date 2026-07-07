@@ -12,13 +12,16 @@ export interface DeckImage {
 }
 
 // A project's screenshots as a tiny tmux session: the tab bar is the window
-// list ("0:landing-hero 1:chat 2:manage" — digits only in compact mode, the
-// active window starred), the current window renders below in a frame that
-// scales with the pane's width (CSS aspect-ratio, never a fixed height), and
-// the caption is the real filename. object-fit: contain + a letterbox tint
-// means no screenshot is ever cropped — non-16:9 shots letterbox gracefully.
-// Click a tab or press ←/→ while the deck has focus to switch windows; arrow
-// events stop propagating so the global mux bindings never see them.
+// list ("0:landing-hero 1:chat 2:manage" — digits only in compact mode on
+// desktop, where collage panes get squeezed; on mobile every pane is
+// full-width and the tabbar scrolls sideways, so compact decks show the full
+// window names too, the active window starred), the current window renders
+// below in a frame that scales with the pane's width (CSS aspect-ratio,
+// never a fixed height), and the caption is the real filename. object-fit:
+// contain + a letterbox tint means no screenshot is ever cropped — non-16:9
+// shots letterbox gracefully. Click a tab or press ←/→ while the deck has
+// focus to switch windows; arrow events stop propagating so the global mux
+// bindings never see them.
 export default function ImageDeck({
   images,
   aspectRatio = "16 / 9",
@@ -61,8 +64,19 @@ export default function ImageDeck({
       aria-label={`screenshots — ${images.length} windows, arrow keys switch`}
       onKeyDown={onKeyDown}
     >
+      <style>{`
+        .deck-lbl-full { display: none; }
+        @media (max-width: 860px) {
+          /* full-width mobile panes: real window names beat bare digits;
+             the global .tabbar rule scrolls sideways instead of wrapping */
+          .deck-lbl-digit { display: none; }
+          .deck-lbl-full { display: inline; }
+          /* finger-sized tabs: 10px text + 12px padding ≈ 41px tall */
+          .deck-tabs .tab { padding: 12px; }
+        }
+      `}</style>
       <div
-        className="tabbar"
+        className="tabbar deck-tabs"
         role="tablist"
         aria-label="screenshot windows"
         style={{ marginBottom: 8 }}
@@ -79,7 +93,16 @@ export default function ImageDeck({
             title={compact ? `${i}:${im.label}` : undefined}
             onClick={() => setSelected(i)}
           >
-            {compact ? i : `${i}:${im.label}`}
+            {compact ? (
+              <>
+                <span className="deck-lbl-digit">{i}</span>
+                <span className="deck-lbl-full">
+                  {i}:{im.label}
+                </span>
+              </>
+            ) : (
+              `${i}:${im.label}`
+            )}
             {i === active ? "*" : ""}
           </button>
         ))}
@@ -99,7 +122,10 @@ export default function ImageDeck({
         src={img.src}
         alt={img.alt}
       />
-      <p className="caption">{file}</p>
+      {/* long filenames wrap instead of pushing a narrow pane sideways */}
+      <p className="caption" style={{ overflowWrap: "anywhere" }}>
+        {file}
+      </p>
     </div>
   );
 }

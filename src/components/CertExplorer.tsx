@@ -1,12 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Pane from "@/components/Pane";
 import type { Cert, CertProvider } from "@/lib/content";
 
 // Drill-down explorer for the certifications workspace: issuer panes on the
 // left (every cert is a selectable row), a sticky openssl-style x509
-// inspector + category histogram on the right. All strings come from the
+// inspector + category histogram on the right. On mobile (≤860px, tracked
+// via matchMedia after mount so the server always renders the desktop
+// layout) the right column is not rendered inline — tapping a cert opens
+// the inspector as a full-screen overlay instead, and the categories
+// histogram moves inline below the issuer panes. All strings come from the
 // providers prop — nothing is invented here.
 
 /** compact semester tag, e.g. "Spring 2023" -> "S23".
@@ -31,12 +35,22 @@ const host = (url: string) =>
 
 const certKey = (slug: string, name: string) => `${slug}/${name}`;
 
-const ROW_CSS = `
+const EXPLORER_CSS = `
 .cert-row { display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left; font-size: 12px; padding: 3px 8px; }
 .cert-row:hover { background: color-mix(in srgb, var(--acc) 9%, transparent); }
 .cert-row[aria-pressed="true"] { color: var(--acc); box-shadow: inset 2px 0 0 0 var(--acc); background: color-mix(in srgb, var(--acc) 7%, transparent); }
 .cert-row .nm { min-width: 0; flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cert-row .sem { flex: none; font-size: 11px; }
+@media (max-width: 860px) {
+  /* comfortable tap targets on touch layouts */
+  .cert-row { min-height: 42px; padding: 6px 10px; align-items: center; }
+}
+/* mobile inspector overlay: boxed panel, internal scroll only */
+.modal-panel.cx-modal { min-width: 0; width: 94vw; max-width: 94vw; max-height: 86vh; max-height: 86dvh; padding: 0; display: flex; flex-direction: column; }
+.cx-modal-head { flex: none; display: flex; justify-content: flex-end; padding: 12px 10px 8px; border-bottom: 1px solid var(--border); }
+.cx-close { min-height: 40px; min-width: 40px; padding: 8px 12px; border: 1px solid var(--border-strong); color: var(--muted); font-size: 12px; background: var(--bg); }
+.cx-close:hover, .cx-close:focus-visible { color: var(--acc); border-color: var(--acc); }
+.cx-modal-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 14px 18px; }
 `;
 
 function CertList({
@@ -122,15 +136,12 @@ function IssuerPane({
   );
 }
 
-function Inspector({ provider, cert }: { provider: CertProvider; cert: Cert }) {
+/** the openssl-style x509 body — shared by the desktop inspector pane and
+ *  the mobile overlay so the two never drift apart */
+function X509Block({ provider, cert }: { provider: CertProvider; cert: Cert }) {
   return (
-    <Pane
-      cmd={`openssl x509 -in ${provider.slug}/${fileSlug(cert.name)}.crt -text`}
-      label="certificate inspector"
-    >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-        <pre className="block" style={{ flex: "1 1 auto", minWidth: 0 }}>
-          {`Certificate:
+    <pre className="block" style={{ flex: "1 1 auto", minWidth: 0 }}>
+      {`Certificate:
     Data:
         Version: 3 (0x2)
         Signature Algorithm: glths-it-diploma
@@ -142,22 +153,33 @@ function Inspector({ provider, cert }: { provider: CertProvider; cert: Cert }) {
         Category: ${cert.category}
     Authority Information Access:
         `}
-          {cert.verifyUrl ? (
-            <>
-              {"Verify — "}
-              <a
-                href={cert.verifyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="accent"
-              >
-                {host(cert.verifyUrl)} ↗
-              </a>
-            </>
-          ) : (
-            <span className="dim">Verification: no public credential link</span>
-          )}
-        </pre>
+      {cert.verifyUrl ? (
+        <>
+          {"Verify — "}
+          <a
+            href={cert.verifyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="accent"
+          >
+            {host(cert.verifyUrl)} ↗
+          </a>
+        </>
+      ) : (
+        <span className="dim">Verification: no public credential link</span>
+      )}
+    </pre>
+  );
+}
+
+function Inspector({ provider, cert }: { provider: CertProvider; cert: Cert }) {
+  return (
+    <Pane
+      cmd={`openssl x509 -in ${provider.slug}/${fileSlug(cert.name)}.crt -text`}
+      label="certificate inspector"
+    >
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+        <X509Block provider={provider} cert={cert} />
         {cert.logoUrl && (
           <img
             src={cert.logoUrl}
@@ -204,6 +226,135 @@ function ScanPane({ cert }: { cert: Cert }) {
   );
 }
 
+function CategoriesPane({
+  categories,
+  maxCount,
+}: {
+  categories: [string, number][];
+  maxCount: number;
+}) {
+  return (
+    <Pane cmd="cut -f3 certs.tsv | sort | uniq -c" label="categories">
+      <pre className="block">
+        {categories.map(([category, count]) => (
+          <span key={category}>
+            <span className="accent">
+              {"▇".repeat(count).padEnd(maxCount, " ")}
+            </span>{" "}
+            {String(count).padStart(2, " ")} {category.toLowerCase()}
+            {"\n"}
+          </span>
+        ))}
+      </pre>
+    </Pane>
+  );
+}
+
+/** mobile-only full-screen inspector: fixed overlay + boxed panel that
+ *  scrolls internally. closes via [esc ✕] button, backdrop tap, or Escape. */
+function InspectorOverlay({
+  provider,
+  cert,
+  onClose,
+}: {
+  provider: CertProvider;
+  cert: Cert;
+  onClose: () => void;
+}) {
+  // Escape closes the overlay only — capture phase + stopPropagation so the
+  // global MuxController Escape (unzoom / close keys) never sees the event,
+  // same trick as LinkGuard's confirm modal
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      e.stopPropagation();
+      onClose();
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  }, [onClose]);
+
+  // freeze the workspace scrollport behind the overlay; the panel body is
+  // the only thing that scrolls while this is open
+  useEffect(() => {
+    const main = document.querySelector<HTMLElement>(".main");
+    if (!main) return;
+    const prev = main.style.overflow;
+    main.style.overflow = "hidden";
+    return () => {
+      main.style.overflow = prev;
+    };
+  }, []);
+
+  const scanFile = cert.scanUrl
+    ? cert.scanUrl.split("/").pop() ?? `${fileSlug(cert.name)}.png`
+    : null;
+
+  return (
+    <div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`certificate inspector: ${cert.name}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="modal-panel cx-modal">
+        <span className="notch" aria-hidden="true">
+          <span className="sig">❯ </span>
+          openssl x509 -in {provider.slug}/{fileSlug(cert.name)}.crt -text
+        </span>
+        <div className="cx-modal-head">
+          <button
+            type="button"
+            className="cx-close"
+            autoFocus
+            onClick={onClose}
+            aria-label="close certificate inspector"
+          >
+            [esc ✕] close
+          </button>
+        </div>
+        <div className="cx-modal-body">
+          <X509Block provider={provider} cert={cert} />
+          {cert.logoUrl && (
+            <img
+              src={cert.logoUrl}
+              alt={`${cert.name} badge`}
+              style={{
+                width: 96,
+                height: 96,
+                objectFit: "contain",
+                border: "1px solid var(--border-strong)",
+                background: "var(--bg)",
+                marginTop: 12,
+              }}
+            />
+          )}
+          {scanFile && cert.scanUrl && (
+            <>
+              <p className="meta" style={{ margin: "16px 0 6px" }}>
+                open certificates/{scanFile}
+              </p>
+              <img
+                src={cert.scanUrl}
+                alt={`${cert.name} certificate scan`}
+                style={{
+                  width: "100%",
+                  display: "block",
+                  border: "1px solid var(--border-strong)",
+                }}
+              />
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CertExplorer({ providers }: { providers: CertProvider[] }) {
   const entries = useMemo(
     () => providers.flatMap((p) => p.certs.map((cert) => ({ provider: p, cert }))),
@@ -222,6 +373,24 @@ export default function CertExplorer({ providers }: { providers: CertProvider[] 
     entries.find((e) => certKey(e.provider.slug, e.cert.name) === selectedKey) ??
     entries[0];
 
+  // mobile is decided after mount (server + first client render are always
+  // the desktop layout, so hydration matches); the same 860px breakpoint as
+  // the global mobile relayout in globals.css
+  const [isMobile, setIsMobile] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 860px)");
+    const update = () => {
+      setIsMobile(mq.matches);
+      // growing past the breakpoint reveals the inline inspector column, so
+      // the overlay would be redundant — drop it
+      if (!mq.matches) setOverlayOpen(false);
+    };
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
     for (const { cert } of entries)
@@ -238,9 +407,14 @@ export default function CertExplorer({ providers }: { providers: CertProvider[] 
   const rows: CertProvider[][] = [];
   for (let i = 0; i < rest.length; i += 3) rows.push(rest.slice(i, i + 3));
 
+  const selectCert = (key: string) => {
+    setSelectedKey(key);
+    if (isMobile) setOverlayOpen(true);
+  };
+
   return (
     <>
-      <style>{ROW_CSS}</style>
+      <style>{EXPLORER_CSS}</style>
       <div
         style={{
           // two-column split sharing the machine's 1px border lines;
@@ -257,7 +431,7 @@ export default function CertExplorer({ providers }: { providers: CertProvider[] 
           <IssuerPane
             provider={head}
             selectedKey={selectedKey}
-            onSelect={setSelectedKey}
+            onSelect={selectCert}
             scrollList
           />
           {rows.map((row) => (
@@ -271,45 +445,47 @@ export default function CertExplorer({ providers }: { providers: CertProvider[] 
                   key={p.slug}
                   provider={p}
                   selectedKey={selectedKey}
-                  onSelect={setSelectedKey}
+                  onSelect={selectCert}
                 />
               ))}
             </div>
           ))}
+          {/* on mobile the histogram is static info, not selection-dependent,
+              so it lives inline after the issuer panes */}
+          {isMobile && (
+            <CategoriesPane categories={categories} maxCount={maxCount} />
+          )}
         </div>
 
-        <div style={{ minWidth: 0, background: "var(--bg)" }}>
-          <div
-            style={{
-              // top: 8 (not 0) so the border-notch command title, which
-              // protrudes above the pane, never clips at the scrollport edge
-              position: "sticky",
-              top: 8,
-              display: "flex",
-              flexDirection: "column",
-              gap: 1,
-              background: "var(--border)",
-            }}
-          >
-            <Inspector provider={selected.provider} cert={selected.cert} />
-            <ScanPane cert={selected.cert} />
-            <Pane cmd="cut -f3 certs.tsv | sort | uniq -c" label="categories">
-              <pre className="block">
-                {categories.map(([category, count]) => (
-                  <span key={category}>
-                    <span className="accent">
-                      {"▇".repeat(count).padEnd(maxCount, " ")}
-                    </span>{" "}
-                    {String(count).padStart(2, " ")}{" "}
-                    {category.toLowerCase()}
-                    {"\n"}
-                  </span>
-                ))}
-              </pre>
-            </Pane>
+        {!isMobile && (
+          <div style={{ minWidth: 0, background: "var(--bg)" }}>
+            <div
+              style={{
+                // top: 8 (not 0) so the border-notch command title, which
+                // protrudes above the pane, never clips at the scrollport edge
+                position: "sticky",
+                top: 8,
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+                background: "var(--border)",
+              }}
+            >
+              <Inspector provider={selected.provider} cert={selected.cert} />
+              <ScanPane cert={selected.cert} />
+              <CategoriesPane categories={categories} maxCount={maxCount} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
+
+      {isMobile && overlayOpen && (
+        <InspectorOverlay
+          provider={selected.provider}
+          cert={selected.cert}
+          onClose={() => setOverlayOpen(false)}
+        />
+      )}
     </>
   );
 }
