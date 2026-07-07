@@ -23,9 +23,10 @@ DIodide/thoughts (private)
   materializes the content into `.content/portfolio` and `.content/thoughts`
   (real files — locally the submodule paths are symlinks, which bundler
   tracing can't follow) and mirrors images to `public/content-art/`: every
-  `portfolio-art/` file, every certification asset, and every image in the
-  thoughts repo's `attachments/` (served at
-  `/content-art/thoughts/attachments/<name>`).
+  `portfolio-art/` file, every certification asset, and the thoughts repo's `attachments/`
+  images referenced by a **published** post (served at
+  `/content-art/thoughts/attachments/<name>`; draft-only attachments are
+  withheld from public builds, mirrored under `SHOW_DRAFTS=1`).
 - On Vercel the private submodules can't be fetched, so the script
   shallow-clones both repos with `CONTENT_REPO_TOKEN` instead. **Deploys
   always build the latest content on `main`** — the submodule pointers are a

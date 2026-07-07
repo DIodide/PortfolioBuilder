@@ -19,6 +19,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import matter from "gray-matter";
 
 const ROOT = process.cwd();
 const SOURCE_DIR = process.env.CONTENT_SOURCE_DIR ?? path.join(ROOT, "content", "portfolio");
@@ -178,15 +179,37 @@ mirrorImages(path.join(SNAPSHOT_DIR, "developer", "certifications"));
 
 // Mirror thought-post attachments LAST — the ART_DEST reset above would wipe
 // anything mirrored earlier.
+//
+// SECURITY: only attachments referenced by PUBLISHED posts are mirrored —
+// a draft's images must not be publicly served before the post is.
+// SHOW_DRAFTS builds (local previews only, never Vercel) mirror draft
+// attachments too, matching the parser's draft inclusion.
 const attSrc = path.join(THOUGHTS_SNAP, "attachments");
 const attDest = path.join(ART_DEST, "thoughts", "attachments");
-if (fs.existsSync(attSrc)) {
+const postsDir = path.join(THOUGHTS_SNAP, "posts");
+if (fs.existsSync(attSrc) && fs.existsSync(postsDir)) {
+  const includeDrafts = process.env.SHOW_DRAFTS === "1";
+  const referenced = new Set();
+  for (const f of fs.readdirSync(postsDir)) {
+    if (!f.endsWith(".md")) continue;
+    const { data, content } = matter(fs.readFileSync(path.join(postsDir, f), "utf8"));
+    if (data.hide === true && !includeDrafts) continue;
+    for (const m of content.matchAll(/!\[\[([^\]|]+?)(?:\|[^\]]*)?\]\]/g)) {
+      referenced.add(m[1].trim());
+    }
+    if (typeof data.image === "string") referenced.add(path.basename(data.image));
+  }
   fs.mkdirSync(attDest, { recursive: true });
+  let skipped = 0;
   for (const f of fs.readdirSync(attSrc)) {
-    if (/\.(png|jpe?g|webp|svg|gif)$/i.test(f)) {
+    if (!/\.(png|jpe?g|webp|svg|gif)$/i.test(f)) continue;
+    if (referenced.has(f)) {
       fs.copyFileSync(path.join(attSrc, f), path.join(attDest, f));
       copied++;
+    } else {
+      skipped++;
     }
   }
+  if (skipped) console.log(`Withheld ${skipped} attachment(s) not referenced by any published post.`);
 }
 console.log(`Snapshot ready at .content/portfolio; ${copied} image file(s) mirrored to public/content-art.`);
