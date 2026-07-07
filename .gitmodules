@@ -1,0 +1,3 @@
+[submodule "content/portfolio"]
+	path = content/portfolio
+	url = https://github.com/DIodide/portfolio.git
