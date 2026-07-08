@@ -122,6 +122,17 @@ a.post-row:hover .pr-title { text-decoration: underline; text-decoration-color: 
 .md pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.7; border: 1px solid var(--border); background: var(--bg); color: var(--text); padding: 16px 18px; margin: 26px 0; overflow-x: auto; font-variant-numeric: normal; }
 .md pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
 .md code { font-family: var(--mono); }
+/* shiki-highlighted fences: Rose Pine Dawn on paper, Moon in the book.
+   defaultColor:false means shiki only emits --shiki-light/--shiki-dark
+   custom props — these rules pick the palette to match the site theme. */
+.md pre.shiki { background-color: var(--shiki-light-bg); color: var(--shiki-light); }
+.md pre.shiki span { color: var(--shiki-light); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .md pre.shiki { background-color: var(--shiki-dark-bg); color: var(--shiki-dark); }
+  :root:not([data-theme="light"]) .md pre.shiki span { color: var(--shiki-dark); }
+}
+:root[data-theme="dark"] .md pre.shiki { background-color: var(--shiki-dark-bg); color: var(--shiki-dark); }
+:root[data-theme="dark"] .md pre.shiki span { color: var(--shiki-dark); }
 .md p code, .md li code, .md h2 code, .md h3 code { font-size: 13px; padding: 1px 5px; border: 1px solid var(--sheet-rule); background: var(--bg); color: var(--text); font-variant-numeric: normal; }
 
 /* GFM task lists speak mono (marker drawn on the li — pseudo-elements
@@ -166,7 +177,8 @@ a.post-row:hover .pr-title { text-decoration: underline; text-decoration-color: 
 /* ── reading progress — docked above the status bar ──────────── */
 .readprog { position: fixed; right: 14px; bottom: calc(var(--status-h) + 10px); z-index: 30; display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border-strong); padding: 4px 10px; font-family: var(--mono); font-size: 10.5px; color: var(--faint); max-width: min(60vw, 340px); }
 .readprog .sec { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.readprog .rp-bar { width: 66px; height: 7px; border: 1px solid var(--border-strong); padding: 1px; flex: none; }
+.readprog .rp-bar { width: 66px; height: 7px; border: 1px solid var(--border-strong); padding: 1px; flex: none; cursor: pointer; background: none; display: block; }
+.readprog .rp-bar:hover { border-color: var(--acc); }
 .readprog .rp-fill { display: block; height: 100%; background: repeating-linear-gradient(90deg, var(--acc) 0 4px, transparent 4px 6px); }
 .readprog .rp-pct { font-variant-numeric: tabular-nums; flex: none; }
 

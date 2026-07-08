@@ -232,14 +232,31 @@ export default function PostReader({ post }: { post: ReaderPost }) {
       </section>
 
       {mode === "read" && (
-        <div className="readprog" aria-hidden="true">
-          <span className="sec">
+        <div className="readprog">
+          <span className="sec" aria-hidden="true">
             {section ? `§ ${section.toLowerCase()}` : "¶ top"}
           </span>
-          <span className="rp-bar">
+          <button
+            type="button"
+            className="rp-bar"
+            aria-label={`reading position ${pct}% — click to jump`}
+            title="click to jump"
+            onClick={(e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              const frac = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+              const main = paneRef.current?.closest("main");
+              if (!main) return;
+              main.scrollTo({
+                top: frac * (main.scrollHeight - main.clientHeight),
+                behavior: "smooth",
+              });
+            }}
+          >
             <span className="rp-fill" style={{ width: `${pct}%` }} />
+          </button>
+          <span className="rp-pct" aria-hidden="true">
+            {pct}%
           </span>
-          <span className="rp-pct">{pct}%</span>
         </div>
       )}
     </div>

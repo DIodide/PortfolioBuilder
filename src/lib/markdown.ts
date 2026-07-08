@@ -4,7 +4,22 @@
 // external links follow the site link policy (new tab + LinkGuard confirm
 // when the label doesn't name the destination host).
 import { Marked, type Tokens } from "marked";
+import { codeToHtml } from "shiki";
 import { attachmentUrl } from "./content";
+
+// Rosé Pine pairs with the surface: Moon on the dark book sheet, Dawn on
+// the warm paper. defaultColor:false emits both palettes as CSS custom
+// properties; thoughts.css flips them with the site theme.
+const SHIKI_THEMES = { light: "rose-pine-dawn", dark: "rose-pine-moon" } as const;
+
+async function highlight(code: string, lang: string): Promise<string> {
+  try {
+    return await codeToHtml(code, { lang, themes: SHIKI_THEMES, defaultColor: false });
+  } catch {
+    // unknown language — highlight as plain text so the frame stays uniform
+    return await codeToHtml(code, { lang: "text", themes: SHIKI_THEMES, defaultColor: false });
+  }
+}
 
 export interface OutlineEntry {
   id: string;
@@ -63,14 +78,24 @@ function replaceWikilinks(md: string): string {
   });
 }
 
-export function renderPost(md: string): {
+export async function renderPost(md: string): Promise<{
   html: string;
   outline: OutlineEntry[];
-} {
+}> {
   const outline: OutlineEntry[] = [];
   const marked = new Marked({ gfm: true, breaks: false });
   marked.use({
+    async: true,
+    walkTokens: async (token) => {
+      if (token.type === "code") {
+        const t = token as Tokens.Code & { highlighted?: string };
+        t.highlighted = await highlight(t.text, (t.lang ?? "text").split(/\s+/)[0] || "text");
+      }
+    },
     renderer: {
+      code(token: Tokens.Code & { highlighted?: string }) {
+        return token.highlighted ? token.highlighted + "\n" : false;
+      },
       heading({ tokens, depth }: Tokens.Heading) {
         const text = this.parser.parseInline(tokens);
         const id = headingId(text);
@@ -91,6 +116,6 @@ export function renderPost(md: string): {
       },
     },
   });
-  const html = marked.parse(resolveWikilinks(md)) as string;
+  const html = await marked.parse(resolveWikilinks(md));
   return { html, outline };
 }

@@ -36,7 +36,7 @@ export default async function PostPage({
   const post = getPosts().find((p) => p.slug === slug);
   if (!post) notFound();
 
-  const { html, outline } = renderPost(post.body);
+  const { html, outline } = await renderPost(post.body);
 
   return (
     <PostReader
