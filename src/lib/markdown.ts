@@ -29,9 +29,29 @@ const hostOf = (url: string) => {
   }
 };
 
+/** Apply fn only to segments outside fenced code blocks and inline code
+ *  spans — posts legitimately mention `![[wikilink]]` syntax in code. */
+function outsideCode(md: string, fn: (seg: string) => string): string {
+  return md
+    .split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/g)
+    .map((block, i) =>
+      i % 2 === 1
+        ? block
+        : block
+            .split(/(`[^`\n]*`)/g)
+            .map((seg, j) => (j % 2 === 1 ? seg : fn(seg)))
+            .join(""),
+    )
+    .join("");
+}
+
 /** Replace Obsidian ![[file]] embeds with figure/placeholder HTML before
  *  markdown parsing (raw HTML blocks pass through marked untouched). */
 function resolveWikilinks(md: string): string {
+  return outsideCode(md, (seg) => replaceWikilinks(seg));
+}
+
+function replaceWikilinks(md: string): string {
   return md.replace(/!\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/g, (_, file, caption) => {
     const name = String(file).trim();
     const url = attachmentUrl(name);
