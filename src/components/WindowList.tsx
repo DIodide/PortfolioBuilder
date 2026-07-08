@@ -23,9 +23,6 @@ export function WindowList() {
     const slug = pathname.split("/").filter(Boolean)[1];
     return (
       <>
-        <span className="sess" data-acc="thoughts">
-          [ibraheem]
-        </span>
         <nav className="wlist" aria-label="buffer switcher">
           <Link
             href="/thoughts"
@@ -43,12 +40,8 @@ export function WindowList() {
       </>
     );
   }
-  const active = WINDOWS.find((w) => w.href === pathname) ?? WINDOWS[0];
   return (
     <>
-      <span className="sess" data-acc={active.acc}>
-        [ibraheem]
-      </span>
       <nav className="wlist" aria-label="workspace switcher">
         {WINDOWS.map((w) => (
           <Link

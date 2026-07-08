@@ -62,8 +62,6 @@ export default function Home() {
             {" '"}
             {String(fm.class_year ?? "").slice(-2)}
           </span>
-          <span className="k">shell</span>
-          <span>zsh</span>
           <span className="k">location</span>
           <span>{String(fm.location ?? "").toLowerCase()}</span>
           <span className="k">uptime</span>
@@ -95,28 +93,6 @@ export default function Home() {
             {p}
           </p>
         ))}
-      </Pane>
-
-      <Pane cmd="cat socials.yml" label="socials" gridArea="soc">
-        <div className="rows">
-          {socials.map((s) => {
-            const external = s.href.startsWith("http");
-            return (
-              // label is the handle and the key names the platform, so the
-              // destination is evident — no data-confirm needed.
-              <a
-                key={s.key}
-                href={s.href}
-                {...(external
-                  ? { target: "_blank", rel: "noopener noreferrer" }
-                  : {})}
-              >
-                <span className="accent">{s.key}:</span> {s.label}
-                {external && <span className="faint"> ↗</span>}
-              </a>
-            );
-          })}
-        </div>
       </Pane>
 
       {resumeReady ? (

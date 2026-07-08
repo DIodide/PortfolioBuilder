@@ -110,11 +110,6 @@ export default function Sidebar() {
           </a>
         ))}
       </div>
-      <div className="side-foot">
-        <span className="cmd">$ ssh guest@ibraheem</span>
-        <br />
-        last login: just now · from your browser
-      </div>
     </aside>
   );
 }

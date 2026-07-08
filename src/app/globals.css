@@ -189,8 +189,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .pin-row { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; padding: 5px 8px; font-size: 12px; color: var(--muted); text-decoration: none; }
 .pin-row:hover { background: color-mix(in srgb, var(--muted) 10%, transparent); color: var(--text); }
 .pin-row .k { color: var(--faint); font-size: 10px; width: 58px; flex: none; }
-.side-foot { margin-top: auto; border-top: 1px solid var(--border); padding: 8px 12px; font-size: 10px; color: var(--faint); line-height: 1.6; }
-.side-foot .cmd { color: var(--muted); }
 
 /* ── main / workspace shells ─────────────────────────────────── */
 .main { grid-area: main; min-width: 0; min-height: 0; overflow-y: auto; padding: 10px; }
@@ -201,7 +199,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .grow { min-height: 100%; }
 
 /* fixed-viewport workspace grids */
-.ws-home { grid-template-columns: 1fr 1.15fr 0.95fr; grid-template-rows: 1.15fr 1fr; grid-template-areas: "neo bio bio" "soc res now"; }
+.ws-home { grid-template-columns: 1fr 1.15fr 0.95fr; grid-template-rows: 1.15fr 1fr; grid-template-areas: "neo bio bio" "res now now"; }
 .ws-work { grid-template-columns: 0.9fr 1.3fr; grid-template-rows: auto 1fr; grid-template-areas: "ps log" "hi log"; }
 .ws-course { grid-template-columns: 1.25fr 1fr; grid-template-rows: 186px 1fr; grid-template-areas: "cal cal" "tree proj"; }
 
@@ -300,7 +298,6 @@ a.ccode:hover { border-color: var(--acc); }
 /* ── status bar ──────────────────────────────────────────────── */
 .status { grid-area: status; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 11px; font-variant-numeric: tabular-nums; min-width: 0; gap: 10px; }
 .status .lft, .status .rgt { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.sess { padding: 1px 7px; background: var(--acc, var(--text)); color: var(--bg); font-weight: 600; white-space: nowrap; }
 .wlist { display: flex; gap: 2px; }
 .wlist a { padding: 1px 7px; color: var(--muted); text-decoration: none; white-space: nowrap; }
 .wlist a:hover { color: var(--text); }

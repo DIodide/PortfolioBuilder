@@ -13,8 +13,6 @@ export default function ThoughtsLayout({
   children: React.ReactNode;
 }>) {
   const posts = getPosts();
-  const { published, drafts } = getThoughtsMeta();
-  const { thoughtsSha } = getContentMeta();
 
   const sidebarPosts: SidebarPost[] = posts.map((p) => ({
     slug: p.slug,
@@ -30,10 +28,6 @@ export default function ThoughtsLayout({
       <ThoughtsSidebar
         posts={sidebarPosts}
         tags={tags}
-        published={published}
-        drafts={drafts}
-        draftsVisible={process.env.SHOW_DRAFTS === "1"}
-        thoughtsSha={thoughtsSha}
       />
       <main className="main" data-acc="thoughts">
         {children}

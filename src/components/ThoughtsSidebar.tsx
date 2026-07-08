@@ -29,22 +29,12 @@ function jumpTo(id: string) {
 export default function ThoughtsSidebar({
   posts,
   tags,
-  published,
-  drafts,
-  draftsVisible,
-  thoughtsSha,
 }: {
   posts: SidebarPost[];
   tags: string[];
-  published: number;
-  drafts: number;
-  /** whether this build renders hide:true posts (SHOW_DRAFTS=1) */
-  draftsVisible: boolean;
-  thoughtsSha: string;
 }) {
   const pathname = usePathname();
   const { outline, activeId } = useThoughts();
-  const files = published + drafts;
 
   return (
     <aside
@@ -167,30 +157,8 @@ export default function ThoughtsSidebar({
           </div>
         )}
 
-        <hr className="sep" />
-        <div className="ws-section">
-          <div className="overline">
-            <span>Drafts</span>
-            <span>
-              {published} pub · {drafts} draft
-            </span>
-          </div>
-          <div className="pin-row">
-            <span className="k">view as</span>
-            {draftsVisible ? "owner — drafts visible" : "visitor — drafts hidden"}
-          </div>
-          <div className="pin-row">
-            <span className="k">publish</span>
-            flip hide: false → push
-          </div>
-        </div>
       </div>
 
-      <div className="side-foot">
-        <span className="cmd">$ rsync -a ~/vault/thought-sandboxes/ content/</span>
-        <br />
-        {files} {files === 1 ? "file" : "files"} synced · vault@{thoughtsSha}
-      </div>
     </aside>
   );
 }
