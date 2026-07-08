@@ -2,6 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { jumpToSection } from "./DeckController";
+
+const HREF_TO_ID: Record<string, string> = {
+  "/": "home",
+  "/work": "work",
+  "/projects": "projects",
+  "/certifications": "certifications",
+  "/coursework": "coursework",
+};
 import { useEffect, useState } from "react";
 
 export const WINDOWS = [
@@ -49,6 +58,12 @@ export function WindowList() {
             href={w.href}
             data-acc={w.acc}
             aria-current={pathname === w.href ? "page" : undefined}
+            onClick={(e) => {
+              if (document.getElementById(`ws-${HREF_TO_ID[w.href]}`)) {
+                e.preventDefault();
+                jumpToSection(HREF_TO_ID[w.href], w.href);
+              }
+            }}
           >
             <span className="wlbl-full">{w.label}</span>
             <span className="wlbl-short">{w.short}</span>

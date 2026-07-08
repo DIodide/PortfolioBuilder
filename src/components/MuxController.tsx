@@ -2,6 +2,9 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { jumpToSection } from "./DeckController";
+
+const ROUTE_IDS = ["home", "work", "projects", "certifications", "coursework"];
 
 const ROUTES = ["/", "/work", "/projects", "/certifications", "/coursework"];
 
@@ -76,7 +79,12 @@ export default function MuxController() {
             ?.click();
         } else if (n <= ROUTES.length) {
           unzoomAll();
-          router.push(ROUTES[n - 1]);
+          // inside the deck: instant snap, exactly like the pre-deck cut
+          if (document.getElementById(`ws-${ROUTE_IDS[n - 1]}`)) {
+            jumpToSection(ROUTE_IDS[n - 1], ROUTES[n - 1]);
+          } else {
+            router.push(ROUTES[n - 1]);
+          }
         }
         return;
       }

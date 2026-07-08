@@ -1,16 +1,9 @@
-import CertExplorer from "@/components/CertExplorer";
-import { getCertProviders } from "@/lib/content";
+import Deck from "@/components/Deck";
 
 export const metadata = {
   title: "certifications — Ibraheem Amin",
 };
 
-export default function Certifications() {
-  const providers = getCertProviders();
-
-  return (
-    <div className="stack grow" data-acc="cert">
-      <CertExplorer providers={providers} />
-    </div>
-  );
+export default function Page() {
+  return <Deck initial="certifications" />;
 }

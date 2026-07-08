@@ -214,6 +214,21 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .collage-row .pane:hover, .collage-row .pane:focus-within { flex-grow: 1.9; }
 @media (prefers-reduced-motion: reduce) { .collage-row .pane { transition: none; } }
 
+
+/* ── the snap deck: five workspaces stacked in the scrolling main ── */
+.main.deck { padding: 0; scroll-snap-type: y mandatory; position: relative; }
+.ws-slide { min-height: 100%; padding: 10px; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; }
+/* fill grids stretch to the slide (height:100% can't resolve against
+   min-height, so flex does the stretching); grow stacks keep natural height */
+.ws-slide > .machine.fill { flex: 1 1 auto; height: auto; min-height: 0; }
+.ws-slide > .stack.grow { flex: 1 1 auto; min-height: 0; }
+
+/* right-edge dot rail: quiet position indicator, instant jump on click */
+.dotrail { position: fixed; right: 8px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 25; }
+.dotrail .dot { width: 8px; height: 8px; border: 1px solid var(--border-strong); background: color-mix(in srgb, var(--acc) 25%, transparent); display: block; }
+.dotrail .dot:hover { border-color: var(--acc); }
+.dotrail .dot[aria-current="page"] { background: var(--acc); border-color: var(--acc); height: 18px; }
+
 /* ── pane ────────────────────────────────────────────────────── */
 .pane { position: relative; background: var(--bg); min-width: 0; min-height: 0; outline: none; }
 .pane .scroll { height: 100%; overflow: auto; padding: 18px 18px 22px; }
@@ -342,6 +357,7 @@ a.ccode:hover { border-color: var(--acc); }
   .collage-row { flex-direction: column; min-height: 0; }
   .collage-row .pane { flex: 0 0 auto; }
   .collage-row .pane:hover, .collage-row .pane:focus-within { flex-grow: 0; }
+  .dotrail { right: 3px; }
   .pane.zoom { left: 0; bottom: 45px; }
   .pane.zoom .scroll { height: 100%; overflow: auto; }
   /* finger-sized hit areas for the tiny ⛶ zoom glyph and modal buttons */

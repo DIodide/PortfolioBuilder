@@ -11,7 +11,7 @@ export default function MuxLayout({
   return (
     <>
       <Sidebar />
-      <main className="main">{children}</main>
+      <main className="main deck">{children}</main>
       <StatusBar />
     </>
   );
