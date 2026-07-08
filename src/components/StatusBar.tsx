@@ -15,8 +15,6 @@ export default function StatusBar() {
         <span className="hidesm" title="content repo commit this build rendered">
           content@{sha}
         </span>
-        <span className="divider hidesm">│</span>
-        <span className="hidesm">princeton, nj</span>
       </span>
     </footer>
   );
