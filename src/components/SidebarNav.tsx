@@ -16,7 +16,6 @@ export interface WorkspaceItem {
   acc: string;
   href: string;
   title: string;
-  subtitle: string;
   hotkey: string;
 }
 
@@ -44,7 +43,6 @@ export default function SidebarNav({ items }: { items: WorkspaceItem[] }) {
           </span>
           <span className="tt">
             <span className="t1">{w.title}</span>
-            <span className="t2">{w.subtitle}</span>
           </span>
           <span className="key" aria-hidden="true">
             {w.hotkey}

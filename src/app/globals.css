@@ -56,12 +56,7 @@
   --inner-rule: var(--border);
 
   /* sticky-note sidebar cells: ledger-ink tabs stuck on the desk */
-  --cell-idle-bg: color-mix(in srgb, var(--pastel) 62%, var(--bg));
-  --cell-hover-bg: color-mix(in srgb, var(--pastel) 88%, var(--bg));
-  --cell-active-bg: var(--pastel);
   --cell-edge: 1px 1px 0 rgba(54, 50, 44, 0.18);
-  --cell-active-shadow: 2px 2px 0 rgba(54, 50, 44, 0.24),
-    inset 0 0 0 1px color-mix(in srgb, var(--text) 28%, transparent);
 
   /* paper typography: prose reads serif, data stays typewritten */
   --prose-font: var(--font-stix), "STIX Two Text", Georgia, serif;
@@ -130,12 +125,7 @@
     --notch-tab: none;
     --col-bg: var(--bg);
     --inner-rule: var(--border);
-    --cell-idle-bg: color-mix(in srgb, var(--acc) 7%, transparent);
-    --cell-hover-bg: color-mix(in srgb, var(--acc) 11%, transparent);
-    --cell-active-bg: color-mix(in srgb, var(--acc) 14%, transparent);
     --cell-edge: none;
-    --cell-active-shadow: inset 2px 0 0 0 var(--acc),
-      inset 0 0 0 1px color-mix(in srgb, var(--acc) 55%, transparent);
     --prose-font: var(--sans);
     --prose-fs: 14px;
     --prose-lh: 1.6;
@@ -181,12 +171,7 @@
   --notch-tab: none;
   --col-bg: var(--bg);
   --inner-rule: var(--border);
-  --cell-idle-bg: color-mix(in srgb, var(--acc) 7%, transparent);
-  --cell-hover-bg: color-mix(in srgb, var(--acc) 11%, transparent);
-  --cell-active-bg: color-mix(in srgb, var(--acc) 14%, transparent);
   --cell-edge: none;
-  --cell-active-shadow: inset 2px 0 0 0 var(--acc),
-    inset 0 0 0 1px color-mix(in srgb, var(--acc) 55%, transparent);
   --prose-font: var(--sans);
   --prose-fs: 14px;
   --prose-lh: 1.6;
@@ -231,12 +216,7 @@
   --notch-tab: inline;
   --col-bg: transparent;
   --inner-rule: var(--border);
-  --cell-idle-bg: color-mix(in srgb, var(--pastel) 62%, var(--bg));
-  --cell-hover-bg: color-mix(in srgb, var(--pastel) 88%, var(--bg));
-  --cell-active-bg: var(--pastel);
   --cell-edge: 1px 1px 0 rgba(54, 50, 44, 0.18);
-  --cell-active-shadow: 2px 2px 0 rgba(54, 50, 44, 0.24),
-    inset 0 0 0 1px color-mix(in srgb, var(--text) 28%, transparent);
   --prose-font: var(--font-stix), "STIX Two Text", Georgia, serif;
   --prose-fs: 14.5px;
   --prose-lh: 1.62;
@@ -289,15 +269,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .ws-section { padding: 8px; }
 .overline { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; margin-bottom: 4px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); }
 .cells { display: flex; flex-direction: column; gap: 2px; }
-.cell { position: relative; display: flex; align-items: stretch; text-align: left; width: 100%; padding: 8px 32px 8px 4px; text-decoration: none; background: var(--cell-idle-bg); box-shadow: var(--cell-edge, none); transition: background 0.12s, box-shadow 0.12s; }
+.cell { position: relative; display: flex; align-items: center; text-align: left; width: 100%; padding: 8px 32px 8px 4px; text-decoration: none; transition: background 0.12s, box-shadow 0.12s; }
 .cell .grip { flex: none; width: 14px; display: grid; place-items: center; color: color-mix(in srgb, var(--acc) 45%, var(--faint)); font-size: 9px; }
 .cell .tt { min-width: 0; flex: 1; }
 .cell .t1 { display: block; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
 .cell .t2 { display: block; font-size: 10px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cell .key { position: absolute; right: 6px; top: 6px; font-size: 9px; line-height: 1; padding: 2px 3px; color: var(--muted); background: color-mix(in srgb, var(--bg) 85%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-strong) 60%, transparent), 2px 2px 0 0 color-mix(in srgb, var(--acc) 28%, transparent); }
-.cell:hover { background: var(--cell-hover-bg); }
+.cell .key { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 9px; line-height: 1; padding: 2px 3px; color: var(--muted); background: color-mix(in srgb, var(--bg) 85%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-strong) 60%, transparent), 2px 2px 0 0 color-mix(in srgb, var(--acc) 28%, transparent); }
 .cell:hover .t1 { color: var(--text); }
-.cell[aria-current="page"] { background: var(--cell-active-bg); box-shadow: var(--cell-active-shadow); }
 .cell[aria-current="page"] .t1 { color: var(--text); }
 .cell[aria-current="page"] .t2 { color: color-mix(in srgb, var(--text) 60%, transparent); }
 .sep { border: 0; border-top: 1px solid var(--border); margin: 2px 8px; }
@@ -479,3 +457,93 @@ a.ccode:hover { border-color: var(--acc); }
   .bio-pane h1.name { font-size: 26px; }
   .hidesm { display: none !important; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   sidebar on the desk — hybrid of the two approved redesigns:
+   the felt desk ground + stamped overlines (B), the compact bunched
+   single-line tab stack (A), the white paper keycaps (B), and icon
+   pin rows. Recipes are declared ON the elements so the
+   per-workspace --pastel/--acc actually substitute (a var() inside
+   a custom property resolves at the element that declares it).
+   Base = light (ledger paper); the dark blocks below restore the
+   terminal sidebar exactly.
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --desk-seam: #9aabb9;
+  --desk-stamp: #39434e;
+  --desk-ink-soft: #414c58;
+  --tab-lift: 0 1px 0 rgba(58, 54, 46, 0.30), 2px 3px 3px rgba(58, 54, 46, 0.17);
+  --tab-lift-hover: 0 1px 0 rgba(58, 54, 46, 0.28), 2px 3px 4px rgba(58, 54, 46, 0.20);
+  --tab-lift-active: 0 2px 0 rgba(58, 54, 46, 0.20), 3px 4px 7px rgba(58, 54, 46, 0.28);
+}
+.sidebar { border-right-color: var(--desk-seam); }
+.side-head { border-bottom-color: var(--desk-seam); }
+.wordmark .tilde { color: color-mix(in srgb, var(--acc-home) 76%, var(--text)); }
+.ghost { color: var(--desk-ink-soft); }
+.ghost:hover { background: rgba(30, 27, 22, 0.10); color: var(--text); }
+.sidebar .overline { color: var(--desk-stamp); font-weight: 600; letter-spacing: 0.13em; }
+.sidebar .sep { border-top-color: var(--desk-seam); }
+
+/* the tab stack: compact and bunched (A), each tab a full pastel
+   sticky chip with a faint top light and a lying-on-desk edge (B) */
+.cell { background: linear-gradient(rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0) 58%), var(--pastel); box-shadow: var(--tab-lift); }
+.cell .t1 { color: color-mix(in srgb, var(--acc) 30%, #221f19); }
+.cell .grip { color: color-mix(in srgb, var(--acc) 58%, #2e2922); }
+.cell .key { color: color-mix(in srgb, var(--acc) 30%, #221f19); background: rgba(255, 255, 255, 0.55); box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc) 42%, #8f8778), 2px 2px 0 0 color-mix(in srgb, var(--acc) 46%, transparent); }
+.cell:hover { background: linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.06) 58%), var(--pastel); box-shadow: var(--tab-lift-hover); }
+.cell:hover .t1 { color: var(--text); }
+.cell[aria-current="page"] { background: linear-gradient(rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0) 60%), var(--pastel); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acc) 55%, transparent), var(--tab-lift-active); }
+.cell[aria-current="page"] .t1 { color: var(--text); }
+.cell[aria-current="page"] .key { background: rgba(255, 255, 255, 0.72); box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc) 52%, #8a8375), 2px 2px 0 0 color-mix(in srgb, var(--acc) 62%, transparent); }
+
+/* pin rows: icon + value, inked for the felt */
+.pin-row { color: color-mix(in srgb, var(--text) 82%, var(--desk)); }
+.pin-row:hover { background: rgba(30, 27, 22, 0.08); color: var(--text); }
+.pin-row .k { width: 22px; display: grid; place-items: center; color: var(--desk-ink-soft); }
+.pin-row .k svg { display: block; }
+.pin-row:hover .k { color: var(--text); }
+
+/* dark: the terminal sidebar, exactly as production */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sidebar { border-right-color: var(--border); }
+  :root:not([data-theme="light"]) .side-head { border-bottom-color: var(--border); }
+  :root:not([data-theme="light"]) .wordmark .tilde { color: var(--acc-home); }
+  :root:not([data-theme="light"]) .ghost { color: var(--muted); }
+  :root:not([data-theme="light"]) .ghost:hover { background: color-mix(in srgb, var(--muted) 14%, transparent); color: var(--text); }
+  :root:not([data-theme="light"]) .sidebar .overline { color: var(--faint); font-weight: 500; letter-spacing: 0.05em; }
+  :root:not([data-theme="light"]) .sidebar .sep { border-top-color: var(--border); }
+  :root:not([data-theme="light"]) .cell { background: color-mix(in srgb, var(--acc) 7%, transparent); box-shadow: none; }
+  :root:not([data-theme="light"]) .cell .t1 { color: var(--muted); }
+  :root:not([data-theme="light"]) .cell .grip { color: color-mix(in srgb, var(--acc) 45%, var(--faint)); }
+  :root:not([data-theme="light"]) .cell .key { color: var(--muted); background: color-mix(in srgb, var(--bg) 85%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-strong) 60%, transparent), 2px 2px 0 0 color-mix(in srgb, var(--acc) 28%, transparent); }
+  :root:not([data-theme="light"]) .cell:hover { background: color-mix(in srgb, var(--acc) 11%, transparent); box-shadow: none; }
+  :root:not([data-theme="light"]) .cell:hover .t1 { color: var(--text); }
+  :root:not([data-theme="light"]) .cell[aria-current="page"] { background: color-mix(in srgb, var(--acc) 14%, transparent); box-shadow: inset 2px 0 0 0 var(--acc), inset 0 0 0 1px color-mix(in srgb, var(--acc) 55%, transparent); }
+  :root:not([data-theme="light"]) .cell[aria-current="page"] .t1 { color: var(--text); }
+  :root:not([data-theme="light"]) .cell[aria-current="page"] .key { background: color-mix(in srgb, var(--bg) 85%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-strong) 60%, transparent), 2px 2px 0 0 color-mix(in srgb, var(--acc) 28%, transparent); }
+  :root:not([data-theme="light"]) .pin-row { color: var(--muted); }
+  :root:not([data-theme="light"]) .pin-row:hover { background: color-mix(in srgb, var(--muted) 10%, transparent); color: var(--text); }
+  :root:not([data-theme="light"]) .pin-row .k { color: var(--faint); }
+  :root:not([data-theme="light"]) .pin-row:hover .k { color: var(--text); }
+}
+:root[data-theme="dark"] .sidebar { border-right-color: var(--border); }
+:root[data-theme="dark"] .side-head { border-bottom-color: var(--border); }
+:root[data-theme="dark"] .wordmark .tilde { color: var(--acc-home); }
+:root[data-theme="dark"] .ghost { color: var(--muted); }
+:root[data-theme="dark"] .ghost:hover { background: color-mix(in srgb, var(--muted) 14%, transparent); color: var(--text); }
+:root[data-theme="dark"] .sidebar .overline { color: var(--faint); font-weight: 500; letter-spacing: 0.05em; }
+:root[data-theme="dark"] .sidebar .sep { border-top-color: var(--border); }
+:root[data-theme="dark"] .cell { background: color-mix(in srgb, var(--acc) 7%, transparent); box-shadow: none; }
+:root[data-theme="dark"] .cell .t1 { color: var(--muted); }
+:root[data-theme="dark"] .cell .grip { color: color-mix(in srgb, var(--acc) 45%, var(--faint)); }
+:root[data-theme="dark"] .cell .key { color: var(--muted); background: color-mix(in srgb, var(--bg) 85%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-strong) 60%, transparent), 2px 2px 0 0 color-mix(in srgb, var(--acc) 28%, transparent); }
+:root[data-theme="dark"] .cell:hover { background: color-mix(in srgb, var(--acc) 11%, transparent); box-shadow: none; }
+:root[data-theme="dark"] .cell:hover .t1 { color: var(--text); }
+:root[data-theme="dark"] .cell[aria-current="page"] { background: color-mix(in srgb, var(--acc) 14%, transparent); box-shadow: inset 2px 0 0 0 var(--acc), inset 0 0 0 1px color-mix(in srgb, var(--acc) 55%, transparent); }
+:root[data-theme="dark"] .cell[aria-current="page"] .t1 { color: var(--text); }
+:root[data-theme="dark"] .cell[aria-current="page"] .key { background: color-mix(in srgb, var(--bg) 85%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-strong) 60%, transparent), 2px 2px 0 0 color-mix(in srgb, var(--acc) 28%, transparent); }
+:root[data-theme="dark"] .pin-row { color: var(--muted); }
+:root[data-theme="dark"] .pin-row:hover { background: color-mix(in srgb, var(--muted) 10%, transparent); color: var(--text); }
+:root[data-theme="dark"] .pin-row .k { color: var(--faint); }
+:root[data-theme="dark"] .pin-row:hover .k { color: var(--text); }
+@media (prefers-reduced-motion: reduce) { .cell { transition: none; } }
