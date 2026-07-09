@@ -31,6 +31,19 @@ function unzoomAll() {
     .forEach((p) => p.classList.remove("zoom"));
 }
 
+// out-of-bounds: a subtle directional rubber-band on the whole session
+function shake(dir: "up" | "down" | "left" | "right") {
+  const b = document.body;
+  b.classList.remove("oob-up", "oob-down", "oob-left", "oob-right");
+  void b.offsetWidth; // restart the animation if we're already shaking
+  b.classList.add(`oob-${dir}`);
+  b.addEventListener(
+    "animationend",
+    () => b.classList.remove(`oob-${dir}`),
+    { once: true },
+  );
+}
+
 function toggleZoom(pane: Element) {
   const wasZoomed = pane.classList.contains("zoom");
   unzoomAll();
@@ -63,10 +76,62 @@ export default function MuxController() {
         return;
       }
       if (keysOpen) return;
+      if (e.key.startsWith("Arrow")) {
+        if (e.shiftKey) return;
+        e.preventDefault();
+        unzoomAll();
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+          // surfaces are ordered 1:portfolio · 2:thought-sandboxes — arrows
+          // don't wrap; the edge rubber-bands
+          if (e.key === "ArrowRight") {
+            if (onThoughts) shake("right");
+            else router.push("/thoughts", { scroll: false });
+          } else if (!onThoughts) {
+            shake("left");
+          } else {
+            // return to the workspace the portfolio surface was left on
+            // (the strip's portfolio tab already remembers it)
+            const back =
+              document
+                .querySelector('.surf-tab[data-acc="home"]')
+                ?.getAttribute("href") ?? "/";
+            router.push(back, { scroll: false });
+          }
+          return;
+        }
+        const delta = e.key === "ArrowDown" ? 1 : -1;
+        if (onThoughts) {
+          // buffers: 0:index then the sidebar's recent posts, in order
+          const posts = Array.from(
+            document.querySelectorAll<HTMLAnchorElement>(
+              'nav[aria-label="recent posts"] a[href^="/thoughts/"]',
+            ),
+          ).map((a) => a.getAttribute("href")!);
+          const buffers = ["/thoughts", ...posts];
+          const i = Math.max(0, buffers.indexOf(pathname));
+          const j = i + delta;
+          if (j < 0 || j >= buffers.length) {
+            shake(delta > 0 ? "down" : "up");
+          } else {
+            router.push(buffers[j], { scroll: false });
+          }
+        } else {
+          const i = Math.max(0, ROUTES.indexOf(pathname));
+          const j = i + delta;
+          if (j < 0 || j >= ROUTES.length) {
+            shake(delta > 0 ? "down" : "up");
+          } else if (document.getElementById(`ws-${ROUTE_IDS[j]}`)) {
+            jumpToSection(ROUTE_IDS[j], ROUTES[j]);
+          } else {
+            router.push(ROUTES[j], { scroll: false });
+          }
+        }
+        return;
+      }
       if (e.key === "[" || e.key === "]") {
         // two surfaces, so prev and next are the same toggle
         unzoomAll();
-        router.push(onThoughts ? "/" : "/thoughts");
+        router.push(onThoughts ? "/" : "/thoughts", { scroll: false });
         return;
       }
       const n = parseInt(e.key, 10);
@@ -83,7 +148,7 @@ export default function MuxController() {
           if (document.getElementById(`ws-${ROUTE_IDS[n - 1]}`)) {
             jumpToSection(ROUTE_IDS[n - 1], ROUTES[n - 1]);
           } else {
-            router.push(ROUTES[n - 1]);
+            router.push(ROUTES[n - 1], { scroll: false });
           }
         }
         return;
@@ -145,6 +210,17 @@ export default function MuxController() {
             <tr>
               <td>[ / ]</td>
               <td>cycle surfaces (portfolio · thought-sandboxes)</td>
+            </tr>
+            <tr>
+              <td>← / →</td>
+              <td>previous / next surface</td>
+            </tr>
+            <tr>
+              <td>↑ / ↓</td>
+              <td>
+                previous / next window (workspaces on portfolio · posts on
+                thought-sandboxes)
+              </td>
             </tr>
             <tr>
               <td>1 – 5</td>

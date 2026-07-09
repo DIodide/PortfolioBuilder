@@ -40,6 +40,7 @@ export default function SurfaceStrip() {
       <Link
         className="surf-tab"
         href={ws.href}
+        scroll={false}
         data-acc="home"
         aria-current={onThoughts ? undefined : "true"}
         ref={onThoughts ? undefined : activeRef}
@@ -50,6 +51,7 @@ export default function SurfaceStrip() {
       <Link
         className="surf-tab"
         href="/thoughts"
+        scroll={false}
         data-acc="thoughts"
         aria-current={onThoughts ? "true" : undefined}
         ref={onThoughts ? activeRef : undefined}

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 
 export const DECK_SECTIONS = [
   { id: "home", href: "/" },
@@ -28,6 +28,18 @@ export function jumpToSection(id: string, href: string) {
 
 export default function DeckController({ initial }: { initial: string }) {
   const pathname = usePathname();
+
+  // Align to this route's section before paint. Document loads already
+  // aligned via the parse-time script in Deck (this is then a no-op), but
+  // CLIENT-side navigations never execute innerHTML <script>s — without
+  // this, arriving from the thoughts surface always landed on 1:home and
+  // the observer rewrote the URL to "/".
+  useLayoutEffect(() => {
+    document
+      .getElementById(`ws-${initial}`)
+      ?.scrollIntoView({ behavior: "instant", block: "start" });
+  }, [initial]);
+
   useEffect(() => {
     const main = document.querySelector("main.main");
     if (!main) return;
