@@ -54,6 +54,8 @@ export default function HomeWorkspace() {
         .nslip.live .ntag.ntime { color: var(--acc); }
         .nslip .nmain { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nslip .nbranch { font-weight: 400; color: var(--muted); }
+        .nslip .nrepo { color: inherit; text-decoration: none; }
+        .nslip .nrepo:hover { text-decoration: underline; text-decoration-color: var(--acc); }
         .nslip .nfoot { display: flex; align-items: baseline; gap: 7px; margin-top: 9px; font-size: 10.5px; white-space: nowrap; }
         .nslip .nlead { flex: 1 1 auto; min-width: 8px; border-bottom: 1px dotted var(--border-strong); transform: translateY(-3px); }
         .hchip { font-size: 9.5px; padding: 1px 6px; border: 1px solid var(--border-strong); color: var(--muted); }

@@ -53,7 +53,7 @@ export interface TelemetryEvent {
   run_started_at?: string;
   run_duration_ms?: number;
   detail?: string;
-  repo?: { repo_root?: string; repo_name?: string; branch?: string; is_worktree?: boolean };
+  repo?: { repo_root?: string; repo_name?: string; branch?: string; remote?: string; is_worktree?: boolean };
 }
 
 export async function insertEvents(events: TelemetryEvent[]) {
@@ -93,8 +93,11 @@ export async function nowModel() {
     harness: string;
     repo?: string;
     branch?: string;
+    remote?: string;
+    repoUrl?: string;
     durMs?: number;
     sinceTs?: string;
+    count?: number;
     state: "running" | "done";
   }
 
@@ -119,7 +122,9 @@ export async function nowModel() {
           harness: e.harness || "agent",
           repo: e.repo?.repo_name,
           branch: e.repo?.branch,
+          remote: e.repo?.remote,
           durMs: e.run_duration_ms,
+          count: 1,
           state: "done",
         });
         daemonLive = true;
@@ -151,17 +156,74 @@ export async function nowModel() {
     harness: e.harness || "agent",
     repo: e.repo?.repo_name,
     branch: e.repo?.branch,
+    remote: e.repo?.remote,
     sinceTs: e.run_started_at || e.ts,
     state: "running" as const,
   }));
 
   runs.reverse(); // newest first
+
+  // dedupe: fold runs of the same identity within a 6h window of the
+  // group's newest run into one slip (count + summed duration)
+  const identity = (s: Slip) =>
+    [s.ws, s.pane, s.harness, s.remote || s.repo || "", s.branch || ""].join("|");
+  const WINDOW_MS = 6 * 3600 * 1000;
+  const merged: Slip[] = [];
+  const groups = new Map<string, Slip>();
+  for (const r of runs) {
+    const key = identity(r);
+    const g = groups.get(key);
+    if (g && Date.parse(g.ts) - Date.parse(r.ts) <= WINDOW_MS) {
+      g.count = (g.count ?? 1) + 1;
+      g.durMs = (g.durMs ?? 0) + (r.durMs ?? 0);
+    } else {
+      const slip = { ...r };
+      groups.set(key, slip);
+      merged.push(slip);
+    }
+  }
+
+  const shown = merged.slice(0, 12);
+  await Promise.all(
+    [...live, ...shown].map(async (s) => {
+      if (s.remote) s.repoUrl = await publicRepoUrl(s.remote);
+    }),
+  );
+
   return {
     live,
-    runs: runs.slice(0, 12),
+    runs: shown,
     totalRuns: runs.length,
     snapshotTs: lastSnapshot?.ts ?? null,
     daemonLive,
     updated: new Date().toISOString(),
   };
+}
+
+// ── public-repo link resolution ──────────────────────────────────────
+// A remote becomes a link only when github confirms the repo is public.
+// Cached per lambda instance (6h TTL); failures cache as private so an
+// unreachable API can't add latency to every panel read.
+
+const repoVis = new Map<string, { url?: string; exp: number }>();
+
+async function publicRepoUrl(remote: string): Promise<string | undefined> {
+  if (!/^[\w.-]+\/[\w.-]+$/.test(remote)) return undefined;
+  const hit = repoVis.get(remote);
+  if (hit && hit.exp > Date.now()) return hit.url;
+  let url: string | undefined;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${remote}`, {
+      headers: { "User-Agent": "portfolio-now-panel" },
+      signal: AbortSignal.timeout(2500),
+    });
+    if (res.ok) {
+      const meta = (await res.json()) as { private?: boolean; html_url?: string };
+      if (meta.private === false && meta.html_url) url = meta.html_url;
+    }
+  } catch {
+    // treat as private; retried after the TTL
+  }
+  repoVis.set(remote, { url, exp: Date.now() + 6 * 3600 * 1000 });
+  return url;
 }

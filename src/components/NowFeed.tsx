@@ -14,8 +14,11 @@ interface Slip {
   harness: string;
   repo?: string;
   branch?: string;
+  remote?: string;
+  repoUrl?: string;
   durMs?: number;
   sinceTs?: string;
+  count?: number;
   state: "running" | "done";
 }
 
@@ -53,14 +56,15 @@ function SlipCard({ s }: { s: Slip }) {
         {running ? "live" : ago(s.ts)}
       </span>
       <p className="nmain">
-        {s.repo ? (
-          <>
-            {s.repo}
-            {s.branch && <span className="nbranch"> @ {s.branch}</span>}
-          </>
+        {s.remote && s.repoUrl ? (
+          <a href={s.repoUrl} target="_blank" rel="noopener noreferrer" className="nrepo">
+            {s.remote}
+            <span className="nbranch" aria-hidden="true"> ↗</span>
+          </a>
         ) : (
-          s.ws.toLowerCase()
+          (s.remote || s.repo) ?? s.ws.toLowerCase()
         )}
+        {s.branch && <span className="nbranch"> @ {s.branch}</span>}
       </p>
       <p className="nfoot">
         <span className="hchip" data-h={s.harness}>
@@ -70,7 +74,9 @@ function SlipCard({ s }: { s: Slip }) {
         {running ? (
           <span className="accent">● working · {dur(undefined, s.sinceTs)}</span>
         ) : (
-          <span className="dim">✓ done · {dur(s.durMs)}</span>
+          <span className="dim">
+            ✓ done{s.count && s.count > 1 ? ` ×${s.count}` : ""} · {dur(s.durMs)}
+          </span>
         )}
       </p>
     </article>
