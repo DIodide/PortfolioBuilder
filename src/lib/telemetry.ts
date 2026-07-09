@@ -88,6 +88,7 @@ export async function nowModel() {
 
   interface Slip {
     ts: string;
+    host?: string;
     ws: string;
     pane: string;
     harness: string;
@@ -101,8 +102,11 @@ export async function nowModel() {
     state: "running" | "done";
   }
 
-  // walk forward: track open runs per pane; run.finished emits a done slip
-  const open = new Map<string, TelemetryEvent>(); // pane_id -> run.started
+  // walk forward: track open runs per (host, pane); run.finished emits a
+  // done slip. Keyed by host+pane so two machines with the same pane id
+  // (e.g. w6:p1) never clobber each other.
+  const paneKey = (e: TelemetryEvent) => `${e.host ?? ""}|${e.pane_id ?? ""}`;
+  const open = new Map<string, TelemetryEvent>();
   const runs: Slip[] = [];
   let lastSnapshot: TelemetryEvent | null = null;
   let daemonLive = false;
@@ -110,13 +114,14 @@ export async function nowModel() {
   for (const { kind, payload: e } of rows) {
     switch (kind) {
       case "run.started":
-        if (e.pane_id) open.set(e.pane_id, e);
+        if (e.pane_id) open.set(paneKey(e), e);
         daemonLive = true;
         break;
       case "run.finished":
-        if (e.pane_id) open.delete(e.pane_id);
+        if (e.pane_id) open.delete(paneKey(e));
         runs.push({
           ts: e.ts,
+          host: e.host,
           ws: e.workspace_label || e.workspace_id || "?",
           pane: e.pane_id || "?",
           harness: e.harness || "agent",
@@ -130,20 +135,21 @@ export async function nowModel() {
         daemonLive = true;
         break;
       case "agent.gone":
-        if (e.pane_id) open.delete(e.pane_id);
+        if (e.pane_id) open.delete(paneKey(e));
         break;
       case "snapshot":
         lastSnapshot = e;
         daemonLive = true;
         break;
-      case "daemon.stopped":
-        // anything still open when the daemon died isn't live anymore
-        open.clear();
-        daemonLive = false;
+      case "daemon.stopped": {
+        // only THIS host's open runs end — other machines keep streaming
+        const prefix = `${e.host ?? ""}|`;
+        for (const k of open.keys()) if (k.startsWith(prefix)) open.delete(k);
         break;
+      }
       case "agent.status_changed":
         if (e.pane_id && e.status !== "working" && e.status !== "blocked") {
-          open.delete(e.pane_id);
+          open.delete(paneKey(e));
         }
         break;
     }
@@ -151,6 +157,7 @@ export async function nowModel() {
 
   const live: Slip[] = [...open.values()].map((e) => ({
     ts: e.ts,
+    host: e.host,
     ws: e.workspace_label || e.workspace_id || "?",
     pane: e.pane_id || "?",
     harness: e.harness || "agent",
@@ -166,7 +173,7 @@ export async function nowModel() {
   // dedupe: fold runs of the same identity within a 6h window of the
   // group's newest run into one slip (count + summed duration)
   const identity = (s: Slip) =>
-    [s.ws, s.pane, s.harness, s.remote || s.repo || "", s.branch || ""].join("|");
+    [s.host || "", s.ws, s.pane, s.harness, s.remote || s.repo || "", s.branch || ""].join("|");
   const WINDOW_MS = 6 * 3600 * 1000;
   const merged: Slip[] = [];
   const groups = new Map<string, Slip>();
