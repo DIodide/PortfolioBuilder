@@ -54,6 +54,11 @@ export interface TelemetryEvent {
   run_duration_ms?: number;
   detail?: string;
   repo?: { repo_root?: string; repo_name?: string; branch?: string; remote?: string; is_worktree?: boolean };
+  model?: string;
+  tokens_in?: number;
+  tokens_out?: number;
+  tokens_cache_read?: number;
+  tokens_cache_write?: number;
 }
 
 export async function insertEvents(events: TelemetryEvent[]) {
@@ -99,6 +104,8 @@ export async function nowModel() {
     durMs?: number;
     sinceTs?: string;
     count?: number;
+    model?: string;
+    tok?: number;
     state: "running" | "done";
   }
 
@@ -130,6 +137,8 @@ export async function nowModel() {
           remote: e.repo?.remote,
           durMs: e.run_duration_ms,
           count: 1,
+          model: e.model,
+          tok: (e.tokens_in ?? 0) + (e.tokens_out ?? 0) || undefined,
           state: "done",
         });
         daemonLive = true;
@@ -164,6 +173,7 @@ export async function nowModel() {
     repo: e.repo?.repo_name,
     branch: e.repo?.branch,
     remote: e.repo?.remote,
+    model: e.model,
     sinceTs: e.run_started_at || e.ts,
     state: "running" as const,
   }));
@@ -183,6 +193,8 @@ export async function nowModel() {
     if (g && Date.parse(g.ts) - Date.parse(r.ts) <= WINDOW_MS) {
       g.count = (g.count ?? 1) + 1;
       g.durMs = (g.durMs ?? 0) + (r.durMs ?? 0);
+      if (r.tok) g.tok = (g.tok ?? 0) + r.tok;
+      if (!g.model && r.model) g.model = r.model;
     } else {
       const slip = { ...r };
       groups.set(key, slip);
@@ -197,10 +209,13 @@ export async function nowModel() {
     }),
   );
 
+  const totalTokens = runs.reduce((n, r) => n + (r.tok ?? 0), 0);
+
   return {
     live,
     runs: shown,
     totalRuns: runs.length,
+    totalTokens,
     snapshotTs: lastSnapshot?.ts ?? null,
     daemonLive,
     updated: new Date().toISOString(),

@@ -58,7 +58,9 @@ export default function HomeWorkspace() {
         .nslip .nrepo:hover { text-decoration: underline; text-decoration-color: var(--acc); }
         .nslip .nfoot { display: flex; align-items: baseline; gap: 7px; margin-top: 9px; font-size: 10.5px; white-space: nowrap; }
         .nslip .nlead { flex: 1 1 auto; min-width: 8px; border-bottom: 1px dotted var(--border-strong); transform: translateY(-3px); }
-        .hchip { font-size: 9.5px; padding: 1px 6px; border: 1px solid var(--border-strong); color: var(--muted); }
+        .hchip { display: inline-flex; align-items: center; gap: 5px; font-size: 9.5px; padding: 2px 6px; border: 1px solid var(--border-strong); color: var(--muted); }
+        .hchip svg { display: block; flex: none; }
+        .hchip .hmodel { font-size: 9.5px; letter-spacing: 0.01em; }
         .hchip[data-h="claude"] { color: var(--hc-claude, #96502e); border-color: color-mix(in srgb, var(--hc-claude, #96502e) 45%, var(--border-strong)); }
         .hchip[data-h="codex"] { color: var(--hc-codex, #2e6465); border-color: color-mix(in srgb, var(--hc-codex, #2e6465) 45%, var(--border-strong)); }
         .hchip[data-h="herdr"] { color: var(--hc-herdr, #555096); border-color: color-mix(in srgb, var(--hc-herdr, #555096) 45%, var(--border-strong)); }
