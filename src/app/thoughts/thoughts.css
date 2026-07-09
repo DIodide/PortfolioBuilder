@@ -26,7 +26,9 @@
 /* ── the single-pane machine holding the sheet ───────────────── */
 /* main is the scroll container; the pane grows with its content */
 .ws-thoughts { grid-template-columns: 1fr; }
-.tpane { padding: 20px 18px 28px; }
+.pane.tpane { padding: 20px 18px 28px; background: var(--tpane-bg, var(--bg)); border: var(--tpane-border, 0); box-shadow: var(--tpane-shadow, none); }
+.pane.tpane:focus { box-shadow: 0 0 0 1px var(--acc), var(--tpane-shadow, 0 0 rgba(0,0,0,0)); }
+.tpane > .notch { background: var(--sheet-bg); }
 .tpane > .notch.nr { display: inline-flex; align-items: center; gap: 10px; }
 .tpane > .notch.nr a { color: var(--faint); font-size: 11px; padding: 0 2px; text-decoration: none; }
 .tpane > .notch.nr a:hover { color: var(--muted); }
@@ -40,7 +42,7 @@
 .mode-chip[data-mode="read"] .mc-read, .mode-chip[data-mode="src"] .mc-src { color: var(--acc); font-weight: 600; }
 
 /* ══ THE SHEET — one lifted document, two lights ══ */
-.sheet { position: relative; max-width: 872px; margin: 14px auto 44px; background: var(--sheet-bg); border: 1px solid var(--sheet-rule); padding: 46px 62px 60px; }
+.sheet { position: relative; max-width: 872px; margin: 14px auto 44px; background: var(--sheet-bg); border: 1px solid var(--sheet-rule); box-shadow: var(--sheet-shadow, none); padding: 46px 62px 60px; }
 .sheet ::selection { background: var(--acc); color: var(--sheet-bg); }
 /* src mode strips the book back to the terminal ground */
 .sheet.src { background: var(--bg); border-style: dashed; border-color: var(--border-strong); }
@@ -175,7 +177,7 @@ a.post-row:hover .pr-title { text-decoration: underline; text-decoration-color: 
 .srcmd .hot { color: var(--acc); font-weight: 600; }
 
 /* ── reading progress — docked above the status bar ──────────── */
-.readprog { position: fixed; right: 14px; bottom: calc(var(--status-h) + 10px); z-index: 30; display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border-strong); padding: 4px 10px; font-family: var(--mono); font-size: 10.5px; color: var(--faint); max-width: min(60vw, 340px); }
+.readprog { position: fixed; right: 14px; bottom: calc(var(--status-h) + 10px); z-index: 30; display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border-strong); box-shadow: var(--pane-shadow, none); padding: 4px 10px; font-family: var(--mono); font-size: 10.5px; color: var(--faint); max-width: min(60vw, 340px); }
 .readprog .sec { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .readprog .rp-bar { width: 66px; height: 7px; border: 1px solid var(--border-strong); padding: 1px; flex: none; cursor: pointer; background: none; display: block; }
 .readprog .rp-bar:hover { border-color: var(--acc); }

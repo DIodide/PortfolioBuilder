@@ -1,44 +1,81 @@
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════
-   terminal-multiplexer design system
-   - boxed corners everywhere: no border-radius, ever
-   - panes tile via the grid-gap machine: container bg paints the
-     shared 1px border lines, panes are opaque
-   - light mode is the Harness pastel palette; dark mode is its
-     terminal translation (matched-lightness accents)
+   terminal-multiplexer design system — PAPER SKIN
+   Same chassis as production globals.css. Structure untouched:
+   boxed corners, the pane machine, notches, cells, dot rail.
+   What changed is the MATERIAL, all token-driven:
+     light = paper   — warm desk ground, every pane a sheet lying on
+                       it (fine warm border + hairline offset edge),
+                       desk-colored gaps instead of shared 1px lines,
+                       prose set in STIX Two Text, labels typewritten
+     dark  = as-is   — the existing terminal dark, untouched: dark is
+                       already the site's other material (the book)
    ════════════════════════════════════════════════════════════════ */
 
 :root {
-  --bg: #ffffff;
-  --border: #e3e5e9;
-  --border-strong: #d0d7de;
-  --text: #101318;
-  --muted: #6b7280;
-  --faint: #9aa1ab;
-  --err: #cf222e;
+  /* LEDGER / BANKER'S PAPER materials — ledger stock (faint cool
+     blue-white), muted blue-gray felt desk, pale blue rulings.
+     Ink is a warm iron-gall brown-black; shadows stay warm so the
+     cool stock still reads as PAPER, not screen. */
+  --desk: #b7c2ce;
+  --bg: #f2f5f8;
+  --border: #ccd7e4;
+  --border-strong: #aebecf;
+  --text: #1e1b16;
+  --muted: #556472;
+  --faint: #93a0ac;
+  --err: #9e3328; /* ← the ledger red-brown (accounting's red ink) */
 
-  --acc-home: #0c6e93;
-  --acc-work: #bc4c00;
-  --acc-proj: #0e7a50;
-  --acc-cert: #8a5c00;
-  --acc-course: #6d3fc4;
+  /* the Harness accents, re-tuned as inks-on-ledger — same saturation
+     volume, each workspace still distinct + AA on the stock */
+  --acc-home: #2a5f86;   /* dusty blue */
+  --acc-work: #a24127;   /* oxide red-brown ← ledger red as the work accent */
+  --acc-proj: #2f6b4a;   /* slate green */
+  --acc-cert: #7a5410;   /* mustard / ochre */
+  --acc-course: #5b3f9e; /* plum */
 
-  --pastel-home: #d1e7f7;
-  --pastel-work: #ffe4c9;
-  --pastel-proj: #d4eedb;
-  --pastel-cert: #fff3c2;
-  --pastel-course: #e3d5f2;
+  --pastel-home: #d6e2ee;
+  --pastel-work: #f0dccf;
+  --pastel-proj: #d6e6dc;
+  --pastel-cert: #eee3c5;
+  --pastel-course: #e0d8ee;
 
-  /* sidebar cells: slight tint at rest, full treatment when active */
-  --cell-idle-bg: color-mix(in srgb, var(--pastel) 40%, transparent);
-  --cell-hover-bg: color-mix(in srgb, var(--pastel) 70%, transparent);
+  /* sheet-on-desk machinery */
+  --pane-gap: 6px;
+  --machine-bg: transparent;
+  --machine-border: 0;
+  --pane-border: 1px solid var(--border);
+  /* shadows keep a warm graphite cast so sheets read as paper on the
+     cool desk, not as flat cutouts */
+  --pane-shadow: 0 1px 0 rgba(58, 54, 46, 0.20), 1px 2px 3px rgba(58, 54, 46, 0.12);
+  --notch-ring: 0 0 0 1px var(--border);
+  --notch-cmd: none;
+  --notch-tab: inline;
+  --col-bg: transparent;
+  --inner-rule: var(--border);
+
+  /* sticky-note sidebar cells: ledger-ink tabs stuck on the desk */
+  --cell-idle-bg: color-mix(in srgb, var(--pastel) 62%, var(--bg));
+  --cell-hover-bg: color-mix(in srgb, var(--pastel) 88%, var(--bg));
   --cell-active-bg: var(--pastel);
-  --cell-active-shadow: inset 0 0 0 2px color-mix(in srgb, var(--text) 36%, transparent);
+  --cell-edge: 1px 1px 0 rgba(54, 50, 44, 0.18);
+  --cell-active-shadow: 2px 2px 0 rgba(54, 50, 44, 0.24),
+    inset 0 0 0 1px color-mix(in srgb, var(--text) 28%, transparent);
+
+  /* paper typography: prose reads serif, data stays typewritten */
+  --prose-font: var(--font-stix), "STIX Two Text", Georgia, serif;
+  --prose-fs: 14.5px;
+  --prose-lh: 1.62;
+  --lede-fs: 15.5px;
+  --bio-font: var(--font-stix), "STIX Two Text", Georgia, serif;
+  --bio-fs: 15px;
+  --bio-lh: 1.72;
+  --bio-mw: 70ch;
+  --bio-lede: 16px;
 
   --mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  /* pixel faces are single-weight bitmaps — never let them synthesize bold */
   --pixel-line: var(--font-pixel-line), var(--font-geist-mono), monospace;
   --pixel-square: var(--font-pixel-square), var(--font-geist-mono), monospace;
   --iosevka: var(--font-iosevka), var(--font-geist-mono), monospace;
@@ -47,19 +84,24 @@
   --status-h: 30px;
   --strip-h: 34px;
 
-  /* thought-sandboxes surface accent (rose — the hue the 5 workspaces never use) */
-  --acc-thoughts: #a83a5e;
-  --pastel-thoughts: #f5dce6;
-  /* two-skin reading sheet: light theme = warm paper */
-  --sheet-bg: #faf8f4;
-  --sheet-ink: #1c1a17;
-  --sheet-muted: #6d6759;
-  --sheet-rule: #e2ddd2;
+  /* thought-sandboxes surface — plum-rose ink on ledger stock */
+  --acc-thoughts: #9c3a5c;
+  --pastel-thoughts: #eed7e0;
+  --sheet-bg: #f5f7fa;
+  --sheet-ink: #1e1b16;
+  --sheet-muted: #556472;
+  --sheet-rule: #d6e1ed;
   --sheet-serif: var(--font-stix), "STIX Two Text", Georgia, serif;
+  --tpane-bg: transparent;
+  --tpane-border: 0;
+  --tpane-shadow: 0 0 rgba(0, 0, 0, 0);
+  --sheet-shadow: 0 1px 0 rgba(58, 54, 46, 0.20), 2px 3px 4px rgba(58, 54, 46, 0.12);
 }
 
+/* dark mode: the existing terminal, byte-for-byte from production */
 @media (prefers-color-scheme: dark) {
   :root {
+    --desk: #0b0d10;
     --bg: #0b0d10;
     --border: #23272e;
     --border-strong: #30363d;
@@ -78,14 +120,39 @@
     --sheet-muted: #948e80;
     --sheet-rule: #262b33;
     --sheet-serif: var(--font-literata), "Literata", Georgia, serif;
+    --pane-gap: 1px;
+    --machine-bg: var(--border);
+    --machine-border: 1px solid var(--border);
+    --pane-border: 0;
+    --pane-shadow: 0 0 rgba(0, 0, 0, 0);
+    --notch-ring: none;
+    --notch-cmd: inline;
+    --notch-tab: none;
+    --col-bg: var(--bg);
+    --inner-rule: var(--border);
     --cell-idle-bg: color-mix(in srgb, var(--acc) 7%, transparent);
     --cell-hover-bg: color-mix(in srgb, var(--acc) 11%, transparent);
     --cell-active-bg: color-mix(in srgb, var(--acc) 14%, transparent);
+    --cell-edge: none;
     --cell-active-shadow: inset 2px 0 0 0 var(--acc),
       inset 0 0 0 1px color-mix(in srgb, var(--acc) 55%, transparent);
+    --prose-font: var(--sans);
+    --prose-fs: 14px;
+    --prose-lh: 1.6;
+    --lede-fs: 15px;
+    --bio-font: var(--iosevka);
+    --bio-fs: 13.5px;
+    --bio-lh: 1.75;
+    --bio-mw: 80ch;
+    --bio-lede: 14.5px;
+    --tpane-bg: var(--bg);
+    --tpane-border: 0;
+    --tpane-shadow: 0 0 rgba(0, 0, 0, 0);
+    --sheet-shadow: 0 0 rgba(0, 0, 0, 0);
   }
 }
 :root[data-theme="dark"] {
+  --desk: #0b0d10;
   --bg: #0b0d10;
   --border: #23272e;
   --border-strong: #30363d;
@@ -104,38 +171,88 @@
   --sheet-muted: #948e80;
   --sheet-rule: #262b33;
   --sheet-serif: var(--font-literata), "Literata", Georgia, serif;
+  --pane-gap: 1px;
+  --machine-bg: var(--border);
+  --machine-border: 1px solid var(--border);
+  --pane-border: 0;
+  --pane-shadow: 0 0 rgba(0, 0, 0, 0);
+  --notch-ring: none;
+  --notch-cmd: inline;
+  --notch-tab: none;
+  --col-bg: var(--bg);
+  --inner-rule: var(--border);
   --cell-idle-bg: color-mix(in srgb, var(--acc) 7%, transparent);
   --cell-hover-bg: color-mix(in srgb, var(--acc) 11%, transparent);
   --cell-active-bg: color-mix(in srgb, var(--acc) 14%, transparent);
+  --cell-edge: none;
   --cell-active-shadow: inset 2px 0 0 0 var(--acc),
     inset 0 0 0 1px color-mix(in srgb, var(--acc) 55%, transparent);
+  --prose-font: var(--sans);
+  --prose-fs: 14px;
+  --prose-lh: 1.6;
+  --lede-fs: 15px;
+  --bio-font: var(--iosevka);
+  --bio-fs: 13.5px;
+  --bio-lh: 1.75;
+  --bio-mw: 80ch;
+  --bio-lede: 14.5px;
+  --tpane-bg: var(--bg);
+  --tpane-border: 0;
+  --tpane-shadow: 0 0 rgba(0, 0, 0, 0);
+  --sheet-shadow: 0 0 rgba(0, 0, 0, 0);
 }
 :root[data-theme="light"] {
-  --acc-thoughts: #a83a5e;
-  --sheet-bg: #faf8f4;
-  --sheet-ink: #1c1a17;
-  --sheet-muted: #6d6759;
-  --sheet-rule: #e2ddd2;
+  --desk: #b7c2ce;
+  --bg: #f2f5f8;
+  --border: #ccd7e4;
+  --border-strong: #aebecf;
+  --text: #1e1b16;
+  --muted: #556472;
+  --faint: #93a0ac;
+  --err: #9e3328;
+  --acc-home: #2a5f86;
+  --acc-work: #a24127;
+  --acc-proj: #2f6b4a;
+  --acc-cert: #7a5410;
+  --acc-course: #5b3f9e;
+  --acc-thoughts: #9c3a5c;
+  --sheet-bg: #f5f7fa;
+  --sheet-ink: #1e1b16;
+  --sheet-muted: #556472;
+  --sheet-rule: #d6e1ed;
   --sheet-serif: var(--font-stix), "STIX Two Text", Georgia, serif;
-  --bg: #ffffff;
-  --border: #e3e5e9;
-  --border-strong: #d0d7de;
-  --text: #101318;
-  --muted: #6b7280;
-  --faint: #9aa1ab;
-  --err: #cf222e;
-  --acc-home: #0c6e93;
-  --acc-work: #bc4c00;
-  --acc-proj: #0e7a50;
-  --acc-cert: #8a5c00;
-  --acc-course: #6d3fc4;
-  --cell-idle-bg: color-mix(in srgb, var(--pastel) 40%, transparent);
-  --cell-hover-bg: color-mix(in srgb, var(--pastel) 70%, transparent);
+  --pane-gap: 6px;
+  --machine-bg: transparent;
+  --machine-border: 0;
+  --pane-border: 1px solid var(--border);
+  --pane-shadow: 0 1px 0 rgba(58, 54, 46, 0.20), 1px 2px 3px rgba(58, 54, 46, 0.12);
+  --notch-ring: 0 0 0 1px var(--border);
+  --notch-cmd: none;
+  --notch-tab: inline;
+  --col-bg: transparent;
+  --inner-rule: var(--border);
+  --cell-idle-bg: color-mix(in srgb, var(--pastel) 62%, var(--bg));
+  --cell-hover-bg: color-mix(in srgb, var(--pastel) 88%, var(--bg));
   --cell-active-bg: var(--pastel);
-  --cell-active-shadow: inset 0 0 0 2px color-mix(in srgb, var(--text) 36%, transparent);
+  --cell-edge: 1px 1px 0 rgba(54, 50, 44, 0.18);
+  --cell-active-shadow: 2px 2px 0 rgba(54, 50, 44, 0.24),
+    inset 0 0 0 1px color-mix(in srgb, var(--text) 28%, transparent);
+  --prose-font: var(--font-stix), "STIX Two Text", Georgia, serif;
+  --prose-fs: 14.5px;
+  --prose-lh: 1.62;
+  --lede-fs: 15.5px;
+  --bio-font: var(--font-stix), "STIX Two Text", Georgia, serif;
+  --bio-fs: 15px;
+  --bio-lh: 1.72;
+  --bio-mw: 70ch;
+  --bio-lede: 16px;
+  --tpane-bg: transparent;
+  --tpane-border: 0;
+  --tpane-shadow: 0 0 rgba(0, 0, 0, 0);
+  --sheet-shadow: 0 1px 0 rgba(88, 74, 49, 0.18), 2px 3px 4px rgba(88, 74, 49, 0.10);
 }
 
-/* per-workspace accent scoping — put data-acc on any subtree */
+/* per-workspace accent scoping */
 [data-acc="home"]   { --acc: var(--acc-home);   --pastel: var(--pastel-home); }
 [data-acc="work"]   { --acc: var(--acc-work);   --pastel: var(--pastel-work); }
 [data-acc="proj"]   { --acc: var(--acc-proj);   --pastel: var(--pastel-proj); }
@@ -144,11 +261,10 @@
 [data-acc="thoughts"] { --acc: var(--acc-thoughts); --pastel: var(--pastel-thoughts); }
 
 * { box-sizing: border-box; margin: 0; border-radius: 0 !important; }
-/* accent-tinted scrollbars — inherit the active workspace's --acc */
 * { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--acc, var(--muted)) 50%, transparent) transparent; }
 html, body { height: 100%; }
 body {
-  background: var(--bg);
+  background: var(--desk);
   color: var(--text);
   font: 400 13px/1.5 var(--mono);
   display: grid;
@@ -173,7 +289,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .ws-section { padding: 8px; }
 .overline { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; margin-bottom: 4px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); }
 .cells { display: flex; flex-direction: column; gap: 2px; }
-.cell { position: relative; display: flex; align-items: stretch; text-align: left; width: 100%; padding: 8px 32px 8px 4px; text-decoration: none; background: var(--cell-idle-bg); transition: background 0.12s, box-shadow 0.12s; }
+.cell { position: relative; display: flex; align-items: stretch; text-align: left; width: 100%; padding: 8px 32px 8px 4px; text-decoration: none; background: var(--cell-idle-bg); box-shadow: var(--cell-edge, none); transition: background 0.12s, box-shadow 0.12s; }
 .cell .grip { flex: none; width: 14px; display: grid; place-items: center; color: color-mix(in srgb, var(--acc) 45%, var(--faint)); font-size: 9px; }
 .cell .tt { min-width: 0; flex: 1; }
 .cell .t1 { display: block; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
@@ -193,58 +309,53 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ── main / workspace shells ─────────────────────────────────── */
 .main { grid-area: main; min-width: 0; min-height: 0; overflow-y: auto; padding: 10px; }
 
-/* the pane machine: shared 1px borders via grid gap + painted bg */
-.machine { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+/* the pane machine: on paper the shared 1px lines become small
+   desk-colored gaps — separate sheets lying on the same desk */
+.machine { display: grid; gap: var(--pane-gap, 1px); background: var(--machine-bg, var(--border)); border: var(--machine-border, 1px solid var(--border)); }
 .fill { height: 100%; }
 .grow { min-height: 100%; }
 
-/* fixed-viewport workspace grids */
 .ws-home { grid-template-columns: 1fr 1.15fr 0.95fr; grid-template-rows: 1.15fr 1fr; grid-template-areas: "neo bio bio" "res now now"; }
 .ws-work { grid-template-columns: 0.9fr 1.3fr; grid-template-rows: auto 1fr; grid-template-areas: "ps log" "hi log"; }
 .ws-course { grid-template-columns: 1.25fr 1fr; grid-template-rows: 186px 1fr; grid-template-areas: "cal cal" "tree proj"; }
 
-/* scrollable stacked workspaces (projects, certifications):
-   column of rows sharing the same 1px lines */
-.stack { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.stack { display: flex; flex-direction: column; gap: var(--pane-gap, 1px); background: var(--machine-bg, var(--border)); border: var(--machine-border, 1px solid var(--border)); }
 .stack > * { flex: none; }
 
-/* hover collage: panes in a row trade width; one axis at a time */
-.collage-row { display: flex; gap: 1px; min-height: 230px; }
+.collage-row { display: flex; gap: var(--pane-gap, 1px); min-height: 230px; }
 .collage-row .pane { flex: 1 1 0; min-width: 0; transition: flex-grow 0.28s ease; }
 .collage-row .pane:hover, .collage-row .pane:focus-within { flex-grow: 1.9; }
 @media (prefers-reduced-motion: reduce) { .collage-row .pane { transition: none; } }
 
-
-/* ── the snap deck: five workspaces stacked in the scrolling main ── */
+/* ── the snap deck ───────────────────────────────────────────── */
 .main.deck { padding: 0; scroll-snap-type: y mandatory; position: relative; }
 .ws-slide { min-height: 100%; padding: 10px; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; }
-/* fill grids stretch to the slide (height:100% can't resolve against
-   min-height, so flex does the stretching); grow stacks keep natural height */
 .ws-slide > .machine.fill { flex: 1 1 auto; height: auto; min-height: 0; }
 .ws-slide > .stack.grow { flex: 1 1 auto; min-height: 0; }
 
-/* right-edge dot rail: quiet position indicator, instant jump on click */
 .dotrail { position: fixed; right: 8px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 25; }
 .dotrail .dot { width: 8px; height: 8px; border: 1px solid var(--border-strong); background: color-mix(in srgb, var(--acc) 25%, transparent); display: block; }
 .dotrail .dot:hover { border-color: var(--acc); }
 .dotrail .dot[aria-current="page"] { background: var(--acc); border-color: var(--acc); height: 18px; }
 
-/* ── pane ────────────────────────────────────────────────────── */
-.pane { position: relative; background: var(--bg); min-width: 0; min-height: 0; outline: none; }
+/* ── pane: the sheet ─────────────────────────────────────────── */
+.pane { position: relative; background: var(--bg); border: var(--pane-border, 0); box-shadow: var(--pane-shadow); min-width: 0; min-height: 0; outline: none; }
 .pane .scroll { height: 100%; overflow: auto; padding: 18px 18px 22px; }
-.notch { position: absolute; top: 0; left: 12px; transform: translateY(-55%); z-index: 2; background: var(--bg); padding: 0 8px; font-size: 11px; font-weight: 500; color: var(--muted); white-space: nowrap; max-width: 72%; overflow: hidden; text-overflow: ellipsis; }
+/* the notch: a typed label strip stuck over the sheet's top edge */
+.notch { position: absolute; top: 0; left: 12px; transform: translateY(-55%); z-index: 2; background: var(--bg); box-shadow: var(--notch-ring, none); padding: 0 8px; font-size: 11px; font-weight: 500; color: var(--muted); white-space: nowrap; max-width: 72%; overflow: hidden; text-overflow: ellipsis; }
 .notch .sig { color: var(--faint); }
+/* panes carry both voices: the shell command (dark/terminal) and the
+   typed paper tab (light/ledger) — theme picks which one shows */
+.notch.has-tab .n-cmd { display: var(--notch-cmd, inline); }
+.notch .n-tab { display: var(--notch-tab, none); }
 .notch.nr { left: auto; right: 10px; padding: 0 6px; max-width: none; }
 .notch.nr button { color: var(--faint); font-size: 11px; padding: 0 2px; }
 .pane:hover > .notch { color: var(--text); }
 .pane:hover > .notch.nr button, .pane:focus > .notch.nr button { color: var(--muted); }
-.pane:focus { z-index: 3; box-shadow: 0 0 0 1px var(--acc); }
+.pane:focus { z-index: 3; box-shadow: 0 0 0 1px var(--acc), var(--pane-shadow); }
 .pane:focus > .notch { color: var(--acc); }
 .flag { position: absolute; top: 0; right: 64px; transform: translateY(-55%); background: var(--bg); padding: 0 6px; font-size: 10px; color: var(--acc); display: none; z-index: 2; }
 
-/* zoom: pane takes over the main region as a fixed overlay
-   (top offset leaves room for the border-notch title, which hangs
-   translateY(-55%) above the pane edge) */
 .pane.zoom { position: fixed; left: calc(var(--sidebar-w) + 1px); top: calc(var(--strip-h) + 9px); right: 0; bottom: calc(var(--status-h) + 1px); z-index: 40; border: 1px solid var(--acc); box-shadow: none; }
 .pane.zoom > .flag { display: block; }
 .pane.zoom > .notch { color: var(--acc); }
@@ -252,18 +363,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ── pane content idioms ─────────────────────────────────────── */
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; font-size: 12px; }
 .kv .k { color: var(--acc); }
-.prose { font-family: var(--sans); font-size: 14px; line-height: 1.6; max-width: 62ch; }
+.prose { font-family: var(--prose-font, var(--sans)); font-size: var(--prose-fs, 14px); line-height: var(--prose-lh, 1.6); max-width: 62ch; }
 .prose + .prose { margin-top: 10px; }
-.lede { font-size: 15px; }
+.lede { font-size: var(--lede-fs, 15px); }
 h1.name { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
-/* the home masthead only: Geist Pixel Line on its native 52px grid — the
-   pixel face turns to mush at small sizes, so it never leaks to other
-   h1.name uses (e.g. the projects featured title) */
 .bio-pane h1.name { font-family: var(--pixel-line); font-size: 52px; font-weight: 400; letter-spacing: 0; line-height: 1.1; font-synthesis: none; }
-/* bio.md reads in Iosevka at pixel-cut's smaller, airier setting */
-.bio-pane .prose { font-family: var(--iosevka); font-size: 13.5px; line-height: 1.75; max-width: 80ch; }
+.bio-pane .prose { font-family: var(--bio-font, var(--iosevka)); font-size: var(--bio-fs, 13.5px); line-height: var(--bio-lh, 1.75); max-width: var(--bio-mw, 80ch); }
 .bio-pane .prose + .prose { margin-top: 11px; }
-.bio-pane .lede { font-size: 14.5px; }
+.bio-pane .lede { font-size: var(--bio-lede, 14.5px); }
 .cursor { display: inline-block; width: 0.55em; height: 1.05em; background: var(--acc); vertical-align: -0.15em; animation: blink 1.06s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .cursor { animation: none; } * { transition: none !important; } }
@@ -299,14 +406,13 @@ a.ccode:hover { border-color: var(--acc); }
 .ccode.todo { border-style: dashed; color: var(--muted); background: none; }
 .bar { color: var(--acc); }
 
-
-/* ── surface strip (global top tabs: portfolio ⇄ thought-sandboxes) ── */
+/* ── surface strip ───────────────────────────────────────────── */
 .surface-strip { grid-area: strip; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-bottom: 1px solid var(--border); font-size: 11px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .surface-strip .lbl { color: var(--faint); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
-.surf-tab { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border: 1px solid var(--border-strong); color: var(--muted); text-decoration: none; white-space: nowrap; }
+.surf-tab { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border: 1px solid var(--border-strong); color: var(--muted); text-decoration: none; white-space: nowrap; background: var(--bg); box-shadow: var(--cell-edge, none); }
 .surf-tab:hover { color: var(--text); }
 .surf-tab .ctx { color: var(--faint); }
-.surf-tab[aria-current="true"] { color: var(--acc); border-color: color-mix(in srgb, var(--acc) 60%, transparent); background: color-mix(in srgb, var(--acc) 9%, transparent); }
+.surf-tab[aria-current="true"] { color: var(--acc); border-color: color-mix(in srgb, var(--acc) 60%, transparent); background: color-mix(in srgb, var(--acc) 9%, var(--bg)); }
 .surf-plus { padding: 3px 8px; border: 1px dashed var(--border-strong); color: var(--faint); }
 .surface-strip .rgt { margin-left: auto; color: var(--faint); display: flex; gap: 10px; white-space: nowrap; }
 
@@ -323,7 +429,8 @@ a.ccode:hover { border-color: var(--acc); }
 .toast { color: var(--err); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── nested splits, tab bars, image decks ────────────────────── */
-.machine.inner { border: 0; height: 100%; }
+/* inner splits stay hairlines: printed rules on one sheet, not gaps */
+.machine.inner { border: 0; height: 100%; gap: 1px; background: var(--inner-rule); }
 .tabbar { display: flex; gap: 2px; flex-wrap: wrap; }
 .tab { font-size: 10px; padding: 2px 7px; border: 1px solid var(--border-strong); color: var(--muted); cursor: pointer; white-space: nowrap; }
 .tab:hover { color: var(--text); }
@@ -331,19 +438,20 @@ a.ccode:hover { border-color: var(--acc); }
 .deck-img { width: 100%; display: block; object-fit: cover; border: 1px solid var(--border); }
 
 /* ── modal (link confirm etc.) ───────────────────────────────── */
-.modal-overlay { position: fixed; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 75%, transparent); z-index: 70; }
-.modal-panel { position: relative; background: var(--bg); border: 1px solid var(--border-strong); padding: 26px 28px 22px; min-width: 320px; max-width: min(480px, 92vw); }
+.modal-overlay { position: fixed; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--desk) 75%, transparent); z-index: 70; }
+.modal-panel { position: relative; background: var(--bg); border: 1px solid var(--border-strong); box-shadow: var(--pane-shadow); padding: 26px 28px 22px; min-width: 320px; max-width: min(480px, 92vw); }
 .modal-panel .notch { color: var(--text); }
 
 /* ── keys overlay ────────────────────────────────────────────── */
-.keys-overlay { position: fixed; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 75%, transparent); z-index: 60; }
-.keys-panel { position: relative; background: var(--bg); border: 1px solid var(--acc-home); padding: 26px 28px 22px; min-width: 340px; }
+.keys-overlay { position: fixed; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--desk) 75%, transparent); z-index: 60; }
+.keys-panel { position: relative; background: var(--bg); border: 1px solid var(--acc-home); box-shadow: var(--pane-shadow); padding: 26px 28px 22px; min-width: 340px; }
 .keys-panel .notch { color: var(--acc-home); }
 .keys-panel table { border-collapse: collapse; font-size: 12px; }
 .keys-panel td { padding: 3px 0; }
 .keys-panel td:first-child { color: var(--acc-home); width: 90px; }
 
-/* ── mobile: even-vertical relayout ──────────────────────────── */
+
+/* ── mobile: even-vertical relayout ── */
 .wlbl-short { display: none; }
 @media (max-width: 860px) {
   body { grid-template-columns: 1fr; grid-template-rows: var(--strip-h) 1fr 44px; grid-template-areas: "strip" "main" "status"; }
@@ -352,18 +460,14 @@ a.ccode:hover { border-color: var(--acc); }
   .machine, .ws-home, .ws-work, .ws-course { display: grid; grid-template-columns: 1fr !important; grid-template-areas: none !important; grid-template-rows: none !important; height: auto; }
   .machine > .pane, .stack .pane { grid-area: auto !important; }
   .pane .scroll { height: auto; max-height: none; overflow: visible; padding: 16px 14px 20px; }
-  /* stacked collage panes take their natural content height — flex-basis 0
-     in a column flow collapses panes to zero and overlays their content */
   .collage-row { flex-direction: column; min-height: 0; }
   .collage-row .pane { flex: 0 0 auto; }
   .collage-row .pane:hover, .collage-row .pane:focus-within { flex-grow: 0; }
   .dotrail { right: 3px; }
   .pane.zoom { left: 0; bottom: 45px; }
   .pane.zoom .scroll { height: 100%; overflow: auto; }
-  /* finger-sized hit areas for the tiny ⛶ zoom glyph and modal buttons */
   .notch.nr button { padding: 14px 12px; margin: -14px -12px; background: none; }
   .modal-panel .btn { padding: 10px 16px; }
-  /* status bar: single row, horizontally scrollable, short window labels */
   .status { padding: 0 6px; gap: 6px; }
   .status .lft { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
   .wlist { flex-wrap: nowrap; }
@@ -371,7 +475,6 @@ a.ccode:hover { border-color: var(--acc); }
   .sess { padding: 1px 5px; font-size: 10px; }
   .wlbl-full { display: none; }
   .wlbl-short { display: inline; }
-  /* deck/window tab bars scroll instead of wrapping */
   .tabbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
   .bio-pane h1.name { font-size: 26px; }
   .hidesm { display: none !important; }

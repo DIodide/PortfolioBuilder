@@ -6,6 +6,7 @@ import type { CSSProperties, ReactNode } from "react";
 // command this pane pretends to be the output of.
 export default function Pane({
   cmd,
+  tab,
   sub,
   label,
   gridArea,
@@ -16,6 +17,9 @@ export default function Pane({
 }: {
   /** fake shell command shown in the border notch, e.g. `cat bio.md` */
   cmd: string;
+  /** typed paper-tab label for the light (ledger) theme, e.g. `bio` —
+   *  omit to keep the shell command in both themes */
+  tab?: string;
   /** optional accent-colored suffix in the notch, e.g. `· ★ featured` */
   sub?: string;
   /** accessible name for the pane */
@@ -33,10 +37,18 @@ export default function Pane({
       tabIndex={0}
       aria-label={label}
     >
-      <span className="notch" aria-hidden="true">
-        <span className="sig">❯ </span>
-        {cmd}
-        {sub && <span className="accent"> {sub}</span>}
+      <span className={`notch${tab ? " has-tab" : ""}`} aria-hidden="true">
+        <span className="n-cmd">
+          <span className="sig">❯ </span>
+          {cmd}
+          {sub && <span className="accent"> {sub}</span>}
+        </span>
+        {tab && (
+          <span className="n-tab">
+            {tab}
+            {sub && <span className="accent"> {sub}</span>}
+          </span>
+        )}
       </span>
       <span className="flag" aria-hidden="true">
         [Z]

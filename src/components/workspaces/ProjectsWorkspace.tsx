@@ -87,7 +87,8 @@ function ProjectCard({ p }: { p: Project }) {
       : undefined;
 
   return (
-    <Pane cmd={`cat ${p.dir}.md`} label={p.name.toLowerCase()}>
+    <Pane cmd={`cat ${p.dir}.md`}
+      tab={p.name.toLowerCase()} label={p.name.toLowerCase()}>
       <ImageDeck images={deckImages(p)} compact />
       <h2
         style={{
@@ -173,6 +174,7 @@ export default function ProjectsWorkspace() {
         {featured && (
           <Pane
             cmd={`cat ${featured.dir}/PROJECT.md`}
+        tab={featured.name.toLowerCase()}
             sub="· ★ featured"
             label={`featured project: ${featured.name.toLowerCase()}`}
           >

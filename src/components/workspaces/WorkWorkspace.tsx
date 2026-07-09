@@ -32,7 +32,7 @@ export default function WorkWorkspace() {
 
   return (
     <div className="machine fill ws-work" data-acc="work">
-      <Pane cmd="ps -u ibraheem" label="current roles" gridArea="ps">
+      <Pane cmd="ps -u ibraheem" tab="current roles" label="current roles" gridArea="ps">
         <pre className="block">
           <span className="faint">
             {"  " + "started".padEnd(startW) + "  proc"}

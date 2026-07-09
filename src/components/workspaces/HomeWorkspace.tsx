@@ -39,7 +39,7 @@ export default function HomeWorkspace() {
         }
       `}</style>
       <div className="machine fill ws-home" data-acc="home">
-      <Pane cmd="neofetch" label="identity" gridArea="neo">
+      <Pane cmd="neofetch" tab="at a glance" label="identity" gridArea="neo">
         <pre className="glyph" aria-hidden="true">
           {GLYPH}
         </pre>
@@ -70,7 +70,7 @@ export default function HomeWorkspace() {
         </div>
       </Pane>
 
-      <Pane cmd="cat bio.md" label="bio" gridArea="bio" className="bio-pane">
+      <Pane cmd="cat bio.md" tab="bio" label="bio" gridArea="bio" className="bio-pane">
         <h1 className="name">
           {String(fm.name ?? "Ibraheem Amin").toLowerCase()}{" "}
           <span className="cursor" aria-hidden="true"></span>
@@ -93,7 +93,7 @@ export default function HomeWorkspace() {
       </Pane>
 
       {resumeReady ? (
-        <Pane cmd="open resume.pdf" label="resume" gridArea="res">
+        <Pane cmd="open resume.pdf" tab="resume" label="resume" gridArea="res">
           {/* "$ open resume.pdf" doesn't name the destination host, so an
               external resume link gets the LinkGuard confirm. */}
           <a
@@ -107,7 +107,7 @@ export default function HomeWorkspace() {
           </a>
         </Pane>
       ) : (
-        <Pane cmd="stat resume.pdf" label="resume" gridArea="res">
+        <Pane cmd="stat resume.pdf" tab="resume" label="resume" gridArea="res">
           <p className="red" style={{ fontSize: 12 }}>
             stat: resume.pdf: No such file
             <br />
@@ -125,7 +125,7 @@ export default function HomeWorkspace() {
         </Pane>
       )}
 
-      <Pane cmd="tail -f now.log" label="current roles" gridArea="now">
+      <Pane cmd="tail -f now.log" tab="now" label="current roles" gridArea="now">
         <div className="rows">
           {current.map((w) => (
             <span key={w.workplace + w.role}>

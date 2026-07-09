@@ -103,6 +103,7 @@ function IssuerPane({
   return (
     <Pane
       cmd={`ls certs/${provider.slug}/`}
+      tab={provider.provider.toLowerCase()}
       sub={`· ${provider.count}`}
       label={`${provider.provider} certifications`}
     >
@@ -175,6 +176,7 @@ function X509Block({ provider, cert }: { provider: CertProvider; cert: Cert }) {
 function Inspector({ provider, cert }: { provider: CertProvider; cert: Cert }) {
   return (
     <Pane
+      tab="inspector"
       cmd={`openssl x509 -in ${provider.slug}/${fileSlug(cert.name)}.crt -text`}
       label="certificate inspector"
     >
@@ -206,7 +208,7 @@ function ScanPane({ cert }: { cert: Cert }) {
   if (!cert.scanUrl) return null;
   const file = cert.scanUrl.split("/").pop() ?? `${fileSlug(cert.name)}.png`;
   return (
-    <Pane cmd={`open certificates/${file}`} label="certificate scan">
+    <Pane cmd={`open certificates/${file}`} tab={`scan · ${file}`} label="certificate scan">
       {/* capped height so the sticky x509 → certificate → categories stack
           stays within the viewport; the full scan scrolls inside the frame */}
       <div
@@ -234,7 +236,7 @@ function CategoriesPane({
   maxCount: number;
 }) {
   return (
-    <Pane cmd="cut -f3 certs.tsv | sort | uniq -c" label="categories">
+    <Pane cmd="cut -f3 certs.tsv | sort | uniq -c" tab="categories" label="categories">
       <pre className="block">
         {categories.map(([category, count]) => (
           <span key={category}>

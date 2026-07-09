@@ -213,7 +213,8 @@ export default function CourseworkWorkspace() {
         style={{ gridTemplateColumns: "1fr 1.25fr" }}
       >
         <Pane
-          cmd={span ? `cal ${span}` : "cal"}
+          tab="calendar"
+        cmd={span ? `cal ${span}` : "cal"}
           sub={`· ${semesters.length} semesters · ${courses.length} courses`}
           label="semester calendar"
           gridArea="cal"
@@ -250,7 +251,7 @@ export default function CourseworkWorkspace() {
           ))}
         </Pane>
 
-        <Pane cmd="tree ~/coursework" label="coursework tree" gridArea="tree">
+        <Pane cmd="tree ~/coursework" tab="all courses" label="coursework tree" gridArea="tree">
           <pre className="block">
             {"~/coursework\n"}
             {sections.map((sec, i) => {
@@ -288,6 +289,7 @@ export default function CourseworkWorkspace() {
 
         <Pane
           cmd="cat COURSEWORK_PROJECTS.md"
+        tab="course projects"
           sub={
             projects.length
               ? `· ${projects.length} project${projects.length === 1 ? "" : "s"}`

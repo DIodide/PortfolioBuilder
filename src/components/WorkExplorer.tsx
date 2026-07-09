@@ -147,6 +147,7 @@ function Brief({ wp, onOwn }: { wp: Workplace; onOwn: () => void }) {
   return (
     <Pane
       cmd={`cat ${wp.dir}/WORK_DESCRIPTION.md`}
+        tab={`brief · ${wp.dir}`}
       label={`workplace brief: ${wp.company.toLowerCase()}`}
       gridArea="hi"
     >
@@ -380,6 +381,7 @@ export default function WorkExplorer({
       ) : (
         <Pane
           cmd="cat work/WORK_DESCRIPTION.md"
+        tab="brief"
           label="workplace brief"
           gridArea="hi"
         >
@@ -391,6 +393,7 @@ export default function WorkExplorer({
 
       <Pane
         cmd="tail -f work.log"
+        tab="work log"
         sub={`· ${rows.length} entries`}
         label="work log"
         gridArea="log"
