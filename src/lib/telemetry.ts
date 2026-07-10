@@ -44,6 +44,7 @@ export interface TelemetryEvent {
   workspace_label?: string;
   workspace_number?: number;
   tab_id?: string;
+  tab_label?: string;
   pane_id?: string;
   terminal_id?: string;
   harness?: string;
@@ -101,6 +102,7 @@ export async function nowModel() {
     branch?: string;
     remote?: string;
     repoUrl?: string;
+    tab?: string;
     durMs?: number;
     sinceTs?: string;
     count?: number;
@@ -113,6 +115,9 @@ export async function nowModel() {
   // done slip. Keyed by host+pane so two machines with the same pane id
   // (e.g. w6:p1) never clobber each other.
   const paneKey = (e: TelemetryEvent) => `${e.host ?? ""}|${e.pane_id ?? ""}`;
+  // herdr defaults tab labels to the tab number — numeric means unnamed
+  const namedTab = (e: TelemetryEvent) =>
+    e.tab_label && !/^\d+$/.test(e.tab_label) ? e.tab_label : undefined;
   const open = new Map<string, TelemetryEvent>();
   const runs: Slip[] = [];
   let lastSnapshot: TelemetryEvent | null = null;
@@ -135,6 +140,7 @@ export async function nowModel() {
           repo: e.repo?.repo_name,
           branch: e.repo?.branch,
           remote: e.repo?.remote,
+          tab: namedTab(e),
           durMs: e.run_duration_ms,
           count: 1,
           model: e.model,
@@ -173,6 +179,7 @@ export async function nowModel() {
     repo: e.repo?.repo_name,
     branch: e.repo?.branch,
     remote: e.repo?.remote,
+    tab: namedTab(e),
     model: e.model,
     sinceTs: e.run_started_at || e.ts,
     state: "running" as const,
@@ -183,7 +190,7 @@ export async function nowModel() {
   // dedupe: fold runs of the same identity within a 6h window of the
   // group's newest run into one slip (count + summed duration)
   const identity = (s: Slip) =>
-    [s.host || "", s.ws, s.pane, s.harness, s.remote || s.repo || "", s.branch || ""].join("|");
+    [s.host || "", s.ws, s.pane, s.tab || "", s.harness, s.remote || s.repo || "", s.branch || ""].join("|");
   const WINDOW_MS = 6 * 3600 * 1000;
   const merged: Slip[] = [];
   const groups = new Map<string, Slip>();

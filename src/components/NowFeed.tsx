@@ -52,6 +52,7 @@ interface Slip {
   branch?: string;
   remote?: string;
   repoUrl?: string;
+  tab?: string;
   durMs?: number;
   sinceTs?: string;
   count?: number;
@@ -89,7 +90,8 @@ function SlipCard({ s }: { s: Slip }) {
   return (
     <article className={running ? "nslip live" : "nslip"}>
       <span className="ntag" aria-hidden="true">
-        {s.ws.toLowerCase()}/{s.pane.split(":").pop()}
+        {s.ws.toLowerCase()}
+        {s.tab && <span className="ntab"> · {s.tab.toLowerCase()}</span>}
       </span>
       <span className="ntag ntime" aria-hidden="true">
         {running ? "live" : ago(s.ts)}

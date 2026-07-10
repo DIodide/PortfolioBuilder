@@ -49,7 +49,8 @@ export default function HomeWorkspace() {
         .nslip.live::after { content: ""; position: absolute; inset: -1px; border: 1px solid color-mix(in srgb, var(--acc) 45%, transparent); pointer-events: none; animation: nslip-breathe 3.2s ease-in-out infinite; }
         @keyframes nslip-breathe { 50% { opacity: 0.15; } }
         @media (prefers-reduced-motion: reduce) { .nslip.live::after { animation: none; } }
-        .nslip .ntag { position: absolute; top: 0; left: 8px; transform: translateY(-55%); background: var(--slip-bg); padding: 0 5px; font-size: 9.5px; color: var(--muted); white-space: nowrap; max-width: 55%; overflow: hidden; text-overflow: ellipsis; }
+        .nslip .ntag { position: absolute; top: 0; left: 8px; transform: translateY(-55%); background: var(--slip-bg); padding: 0 5px; font-size: 9.5px; color: var(--muted); white-space: nowrap; max-width: 58%; overflow: hidden; text-overflow: ellipsis; }
+        .nslip .ntag .ntab { color: var(--faint); }
         .nslip .ntag.ntime { left: auto; right: 8px; color: var(--faint); max-width: 38%; }
         .nslip.live .ntag.ntime { color: var(--acc); }
         .nslip .nmain { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
