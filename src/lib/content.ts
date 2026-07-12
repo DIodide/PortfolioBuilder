@@ -679,3 +679,17 @@ export function getContentMeta(): { sha: string; thoughtsSha: string } {
     return { sha: "dev", thoughtsSha: "dev" };
   }
 }
+
+/** Pixelated profile portrait, if the content repo ships one.
+ *  Lives at profile/portfolio-art/profile-pixel[-dark].png and is mirrored
+ *  by prepare-content like all portfolio art. */
+export function getProfileArt(): { light: string; dark: string } | null {
+  const rel = "profile/portfolio-art/profile-pixel.png";
+  if (!fs.existsSync(path.join(CONTENT_DIR, rel))) return null;
+  const relDark = "profile/portfolio-art/profile-pixel-dark.png";
+  const light = `/content-art/${rel}`;
+  return {
+    light,
+    dark: fs.existsSync(path.join(CONTENT_DIR, relDark)) ? `/content-art/${relDark}` : light,
+  };
+}

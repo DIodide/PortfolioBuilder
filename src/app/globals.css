@@ -293,7 +293,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .fill { height: 100%; }
 .grow { min-height: 100%; }
 
-.ws-home { grid-template-columns: 1fr 1.15fr 0.95fr; grid-template-rows: 1.15fr 1fr; grid-template-areas: "neo bio bio" "res now now"; }
+.ws-home { grid-template-columns: 1fr 1.15fr 0.95fr; grid-template-rows: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-areas: "hero hero hero" "res now now"; }
 .ws-work { grid-template-columns: 0.9fr 1.3fr; grid-template-rows: auto 1fr; grid-template-areas: "ps log" "hi log"; }
 .ws-course { grid-template-columns: 1.25fr 1fr; grid-template-rows: 186px 1fr; grid-template-areas: "cal cal" "tree proj"; }
 

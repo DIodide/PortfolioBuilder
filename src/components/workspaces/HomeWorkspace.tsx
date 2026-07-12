@@ -3,6 +3,7 @@ import Pane from "@/components/Pane";
 import {
   getBio,
   getCertProviders,
+  getProfileArt,
   getProjects,
   getSocialLinks,
   getUser,
@@ -28,10 +29,48 @@ export default function HomeWorkspace() {
   const resume = String(fm.resume ?? "");
   const resumeReady = resume !== "" && !resume.startsWith("TODO");
   const school = socials.find((s) => s.key === "school");
+  const pfp = getProfileArt();
 
   return (
     <>
       <style>{`
+        /* ── the dossier hero: bio left · record right ──────────────
+           light = photo print + typed index card on the sheet; dark
+           mirrors the anatomy in terminal materials. */
+        .hero-pane { --print-paper: #fbfdfe; --print-edge: 0 1px 0 rgba(58, 54, 46, 0.20), 2px 3px 5px rgba(58, 54, 46, 0.13); --card-edge: 0 1px 0 rgba(58, 54, 46, 0.16), 1px 2px 3px rgba(58, 54, 46, 0.09); --print-rule: var(--border); }
+        @media (prefers-color-scheme: dark) {
+          :root:not([data-theme="light"]) .hero-pane { --print-paper: color-mix(in srgb, var(--text) 3%, var(--bg)); --print-edge: none; --card-edge: none; --print-rule: var(--border-strong); }
+        }
+        :root[data-theme="dark"] .hero-pane { --print-paper: color-mix(in srgb, var(--text) 3%, var(--bg)); --print-edge: none; --card-edge: none; --print-rule: var(--border-strong); }
+        .hero-pane .scroll { padding: 20px 22px 22px; }
+        .dossier { display: flex; gap: 26px; min-height: 100%; }
+        .dossier-bio { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+        .dossier-bio .prose { align-self: stretch; }
+        .dossier-side { flex: none; display: flex; gap: 20px; align-items: flex-start; padding-left: 26px; border-left: 1px solid var(--inner-rule); }
+        .photo-print { width: 262px; flex: none; margin: 0; background: var(--print-paper); border: 1px solid var(--border-strong); box-shadow: var(--print-edge); padding: 9px 9px 6px; }
+        .print-mat { display: block; border: 1px solid var(--print-rule); }
+        .print-mat > img { display: block; width: 100%; aspect-ratio: 4 / 5; height: auto; object-fit: cover; image-rendering: pixelated; }
+        .print-cap { font-size: 9.5px; letter-spacing: 0.03em; color: var(--muted); padding: 7px 1px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* theme-matched print: light shows the day scan, dark the night scan */
+        .print-mat > img.pfp-d { display: none; }
+        @media (prefers-color-scheme: dark) {
+          :root:not([data-theme="light"]) .print-mat > img.pfp-l { display: none; }
+          :root:not([data-theme="light"]) .print-mat > img.pfp-d { display: block; }
+        }
+        :root[data-theme="dark"] .print-mat > img.pfp-l { display: none; }
+        :root[data-theme="dark"] .print-mat > img.pfp-d { display: block; }
+        .fact-stack { display: flex; flex-direction: column; gap: 16px; width: 218px; flex: none; }
+        .fact-card { border: 1px solid var(--border-strong); background: var(--print-paper); box-shadow: var(--card-edge); padding: 5px 13px 10px; }
+        .fact-row { display: flex; gap: 10px; align-items: baseline; padding: 7.5px 0; }
+        .fact-row + .fact-row { border-top: 1px dotted var(--border-strong); }
+        .fk { flex: none; width: 56px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+        .fv { font-size: 11.5px; line-height: 1.45; color: var(--text); min-width: 0; }
+        /* the neofetch palette strip, printed at the card's foot */
+        .palette { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; padding-top: 10px; border-top: 1px dotted var(--border-strong); margin-top: 2px; }
+        .pchip { height: 9px; display: block; border: 1px solid color-mix(in srgb, var(--border-strong) 55%, transparent); }
+        /* the full IA mark, signing the bio's trailing whitespace (from B) */
+        .dossier-sig { margin-top: auto; align-self: flex-end; padding-top: 14px; }
+        .dossier-sig pre { font-family: var(--mono); font-size: 10px; line-height: 1.15; white-space: pre; color: color-mix(in srgb, var(--acc) 30%, var(--bg)); }
         /* ── the now feed: agent runs as paper slips ─────────────────
            light = slips on the sheet (the approved mock); dark mirrors
            the same slip anatomy in terminal materials. Data lines stay
@@ -76,41 +115,24 @@ export default function HomeWorkspace() {
           [data-acc="home"] .rows a { padding: 11px 0; }
           [data-acc="home"] .btn { padding: 10px 16px; }
           .nslips { grid-template-columns: 1fr 1fr; }
+          .dossier { display: block; }
+          .dossier-side { border-left: 0; padding-left: 0; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--inner-rule); display: flex; flex-direction: column; gap: 16px; }
+          .photo-print { order: 0; width: min(212px, 62%); padding: 7px 7px 5px; }
+          .fact-stack { order: 1; width: 100%; min-width: 0; }
+          .dossier-sig { display: none; }
         }
       `}</style>
       <div className="machine fill ws-home" data-acc="home">
-      <Pane cmd="neofetch" tab="at a glance" label="identity" gridArea="neo">
-        <pre className="glyph" aria-hidden="true">
-          {GLYPH}
-        </pre>
-        <div className="kv">
-          <span className="k">user</span>
-          <span>
-            {String(fm.name ?? "ibraheem amin").toLowerCase()}{" "}
-            <span className="dim">({String(fm.pronouns ?? "he/him")})</span>
-          </span>
-          <span className="k">host</span>
-          <span>{String(fm.school ?? "").toLowerCase()}</span>
-          <span className="k">os</span>
-          <span>
-            {/* explicit string: JSX text ending a line gets its leading
-                space stripped by the compiler ("science'28") */}
-            {String(fm.degree ?? "").toLowerCase()}
-            {" '"}
-            {String(fm.class_year ?? "").slice(-2)}
-          </span>
-          <span className="k">location</span>
-          <span>{String(fm.location ?? "").toLowerCase()}</span>
-          <span className="k">uptime</span>
-          <span>shipping since 2019</span>
-          <span className="k">pkgs</span>
-          <span>
-            {projects.length} projects · {certs} certs · {work.length} roles
-          </span>
-        </div>
-      </Pane>
+<Pane
+        cmd="cat bio.md"
+        tab="dossier"
+        label="bio and identity"
+        gridArea="hero"
+        className="hero-pane bio-pane"
+      >
+        <div className="dossier">
+          <div className="dossier-bio">
 
-      <Pane cmd="cat bio.md" tab="bio" label="bio" gridArea="bio" className="bio-pane">
         <h1 className="name">
           {String(fm.name ?? "Ibraheem Amin").toLowerCase()}{" "}
           <span className="cursor" aria-hidden="true"></span>
@@ -130,6 +152,44 @@ export default function HomeWorkspace() {
             {p}
           </p>
         ))}
+            <div className="dossier-sig" aria-hidden="true">
+              <pre>{GLYPH}</pre>
+            </div>
+          </div>
+          <div className="dossier-side">
+            <div className="fact-stack">
+              <div className="fact-card">
+                <div className="fact-row"><span className="fk">user</span><span className="fv">{String(fm.name ?? "ibraheem amin").toLowerCase()} <span className="dim">({String(fm.pronouns ?? "he/him")})</span></span></div>
+                <div className="fact-row"><span className="fk">host</span><span className="fv">{String(fm.school ?? "").toLowerCase()}</span></div>
+                <div className="fact-row"><span className="fk">os</span><span className="fv">{`b.s.e. computer science '${String(fm.gradYear ?? "28").slice(-2)}`}</span></div>
+                <div className="fact-row"><span className="fk">location</span><span className="fv">{String(fm.hometown ?? "lowell, ma").toLowerCase()}</span></div>
+                <div className="fact-row"><span className="fk">uptime</span><span className="fv">shipping since 2019</span></div>
+                <div className="fact-row"><span className="fk">pkgs</span><span className="fv">7 projects · 36 certs · 13 roles</span></div>
+                <div className="palette" aria-hidden="true">
+                  {["home", "work", "proj", "cert", "course", "thoughts"].map((a) => (
+                    <span key={a} className="pchip" style={{ background: `var(--acc-${a})` }}></span>
+                  ))}
+                  <span className="pchip" style={{ background: "var(--err)" }}></span>
+                  <span className="pchip" style={{ background: "var(--muted)" }}></span>
+                  {["home", "work", "proj", "cert", "course", "thoughts"].map((a) => (
+                    <span key={`p-${a}`} className="pchip" style={{ background: `var(--pastel-${a})` }}></span>
+                  ))}
+                  <span className="pchip" style={{ background: "var(--border-strong)" }}></span>
+                  <span className="pchip" style={{ background: "var(--faint)" }}></span>
+                </div>
+              </div>
+            </div>
+            {pfp && (
+              <figure className="photo-print">
+                <span className="print-mat">
+                  <img className="pfp-l" src={pfp.light} alt="pixel portrait of ibraheem amin" width={640} height={800} />
+                  <img className="pfp-d" src={pfp.dark} alt="" aria-hidden="true" width={640} height={800} />
+                </span>
+                <figcaption className="print-cap">ibraheem amin — princeton, nj</figcaption>
+              </figure>
+            )}
+          </div>
+        </div>
       </Pane>
 
       {resumeReady ? (

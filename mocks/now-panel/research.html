@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Audit and privacy-safe telemetry proposal for the PortfolioBuilder live agent panel.">
+    <link rel="icon" href="data:,">
+    <title>Now panel research</title>
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <header class="index-bar">
+      <a class="research-back" href="index.html">&lt;- four mocks</a>
+      <span>audit / data proposal</span>
+    </header>
+    <main class="research-main">
+      <section class="research-intro">
+        <div>
+          <p class="index-kicker">design follows the contract</p>
+          <h1>The pane has a hierarchy problem.</h1>
+        </div>
+        <p>
+          The current slips repeat where, model, and duration, but they flatten
+          current state, project context, stream health, and meaningful outcomes.
+          Better layout starts by preserving better data.
+        </p>
+      </section>
+
+      <section class="research-section">
+        <h2>Current gaps</h2>
+        <div class="research-copy">
+          <ol>
+            <li>Only two live agents render even when the API returns more, and unsorted insertion order decides which two.</li>
+            <li>Blocked agents stay open in the read model but appear as working in the interface.</li>
+            <li>Six-hour merging can erase individual run boundaries and duration distribution.</li>
+            <li>At-least-once delivery has no stable event ID or ingest idempotency, so totals can inflate.</li>
+            <li>Snapshots are timestamped but never used to reconcile stale or missing live state.</li>
+            <li>Host, focus intervals, cache counters, collector health, and freshness are stored or returned but discarded.</li>
+            <li>API failure can look like an empty desk while the footer still claims the stream is live.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="research-section">
+        <h2>Field plan</h2>
+        <div class="research-copy research-table-wrap">
+          <table class="research-table">
+            <caption>Recommended sequence for the Herdr collector and site read model.</caption>
+            <thead>
+              <tr><th scope="col">Phase</th><th scope="col">Fields</th><th scope="col">Why</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Use now</td>
+                <td><code>status</code>, host, focus, cache usage, heartbeat, snapshot time</td>
+                <td>These signals already exist. Preserve them before expanding collection.</td>
+              </tr>
+              <tr>
+                <td>Correctness</td>
+                <td><code>event_id</code>, <code>run_id</code>, start/end, last seen, status since</td>
+                <td>Enables idempotency, reliable reconciliation, uncapped rosters, and stable selection.</td>
+              </tr>
+              <tr>
+                <td>Truthful state</td>
+                <td>working time, waiting time, finish reason, interrupted/cancelled/unknown</td>
+                <td>Stops the UI from calling every open run working and every ending successful.</td>
+              </tr>
+              <tr>
+                <td>Public meaning</td>
+                <td><code>public_title</code>, role, phase, friendly host alias</td>
+                <td>Only from explicit opt-in metadata with TTL and per-workspace publish policy.</td>
+              </tr>
+              <tr>
+                <td>Git outcome</td>
+                <td>allowlisted HEAD, commit count, dirty state, file/addition/deletion counts</td>
+                <td>Provides tangible progress without reading paths, diffs, prompts, or file content.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="research-section">
+        <h2>Privacy line</h2>
+        <div class="research-copy">
+          <p>
+            Prompts remain private. The collector should never publish prompt or
+            response text, pane content, transcript structure, terminal previews,
+            tool names, file paths, or OSC titles. A private workspace can still
+            report presence, state, and coarse timing while its identity and work
+            remain redacted.
+          </p>
+          <p>
+            OpenTelemetry's current GenAI registry is a useful naming reference
+            for agent, provider, model, workflow, and token fields. It also warns
+            that message attributes can contain sensitive information, which
+            supports keeping this stream counters-only.
+          </p>
+          <p>
+            <a href="https://opentelemetry.io/docs/specs/semconv/registry/attributes/gen-ai/">OpenTelemetry GenAI attributes</a>
+            / <a href="https://www.w3.org/WAI/tutorials/tables/">W3C table guidance</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="research-section">
+        <h2>Recommendation</h2>
+        <div class="research-copy">
+          <p>
+            Use Workstreams as the public default and place Live Ledger's current
+            roster above it. Add Day Score only after focus intervals and stable
+            run IDs are reliable. Keep Herdr Map as the technical owner view.
+          </p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

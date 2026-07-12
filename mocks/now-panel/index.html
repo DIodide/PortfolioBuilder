@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Four card-free redesign concepts for the PortfolioBuilder live agent panel.">
+    <link rel="icon" href="data:,">
+    <title>Now panel redesigns</title>
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <header class="index-bar">
+      <span>PortfolioBuilder / now panel study</span>
+      <span>4 interactive mocks</span>
+    </header>
+    <main class="index-main">
+      <section class="index-intro">
+        <div>
+          <p class="index-kicker">current agents, without a card grid</p>
+          <h1>Four ways to read the work.</h1>
+        </div>
+        <p class="intro-copy">
+          Each direction keeps the existing home workspace and swaps only the
+          live Herdr pane. The concepts change the information hierarchy, not
+          just the surface styling.
+        </p>
+      </section>
+
+      <section class="concept-list" aria-label="Now panel mockups">
+        <article class="concept-entry">
+          <p class="concept-number">01 / live first</p>
+          <div>
+            <h2>Live ledger</h2>
+            <p>Uncapped current agents up top; completed work becomes a compact, semantic run table.</p>
+            <a class="open-link" href="01-live-ledger.html">Open interactive mock -&gt;</a>
+          </div>
+          <a class="concept-preview" href="01-live-ledger.html" aria-label="Open Live ledger mock">
+            <img src="screenshots/01-live-ledger.png" alt="Live ledger concept preview" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+            <span class="preview-fallback" hidden>Preview generated during visual QA</span>
+          </a>
+        </article>
+
+        <article class="concept-entry">
+          <p class="concept-number">02 / project first</p>
+          <div>
+            <h2>Workstreams</h2>
+            <p>Aggregate repeated runs by public repo or privacy-shaped workspace, then show the agents inside.</p>
+            <a class="open-link" href="02-workstreams.html">Open interactive mock -&gt;</a>
+          </div>
+          <a class="concept-preview" href="02-workstreams.html" aria-label="Open Workstreams mock">
+            <img src="screenshots/02-workstreams.png" alt="Workstreams concept preview" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+            <span class="preview-fallback" hidden>Preview generated during visual QA</span>
+          </a>
+        </article>
+
+        <article class="concept-entry">
+          <p class="concept-number">03 / time first</p>
+          <div>
+            <h2>Day score</h2>
+            <p>A shared clock for agent runtime and optional human focus, with an honest mobile chronology.</p>
+            <a class="open-link" href="03-day-score.html">Open interactive mock -&gt;</a>
+          </div>
+          <a class="concept-preview" href="03-day-score.html" aria-label="Open Day score mock">
+            <img src="screenshots/03-day-score.png" alt="Day score concept preview" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+            <span class="preview-fallback" hidden>Preview generated during visual QA</span>
+          </a>
+        </article>
+
+        <article class="concept-entry">
+          <p class="concept-number">04 / herdr first</p>
+          <div>
+            <h2>Herdr map</h2>
+            <p>The real host, workspace, named-tab, and agent hierarchy, with freshness and a selected run trail.</p>
+            <a class="open-link" href="04-herdr-map.html">Open interactive mock -&gt;</a>
+          </div>
+          <a class="concept-preview" href="04-herdr-map.html" aria-label="Open Herdr map mock">
+            <img src="screenshots/04-herdr-map.png" alt="Herdr map concept preview" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+            <span class="preview-fallback" hidden>Preview generated during visual QA</span>
+          </a>
+        </article>
+      </section>
+
+      <section class="recommendation">
+        <h2>Recommendation</h2>
+        <p>
+          Start from Workstreams for the public portfolio, then borrow Live
+          Ledger's current-agent roster. It reads as projects moving through a
+          day, not as a gallery of model receipts.
+        </p>
+      </section>
+
+      <section class="data-note">
+        <h2>Data direction</h2>
+        <p>
+          Reuse status, host, focus, health, and full usage data first. Then add
+          stable <code>event_id</code>/<code>run_id</code>, truthful outcomes,
+          freshness, working-vs-waiting duration, and explicit opt-in
+          <code>public_title</code>. Nothing prompt-derived enters the design.
+          <a href="research.html">Read the audit and field proposal.</a>
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
