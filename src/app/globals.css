@@ -441,7 +441,19 @@ a.ccode:hover { border-color: var(--acc); }
   .collage-row { flex-direction: column; min-height: 0; }
   .collage-row .pane { flex: 0 0 auto; }
   .collage-row .pane:hover, .collage-row .pane:focus-within { flex-grow: 0; }
-  .dotrail { right: 3px; }
+  /* phones: the deck scrolls natively — every section already exceeds
+     the viewport, so mandatory snap only eats gentle scrolls near
+     section boundaries (measured: a 200px swipe moved 0px) */
+  .main.deck { scroll-snap-type: none; }
+  .ws-slide { scroll-snap-stop: normal; }
+  /* the dot rail is sub-tappable at 8px and floats over content — the
+     44px window list below is the mobile navigator */
+  .dotrail { display: none; }
+  /* the strip label ghosts under the tabs once the strip scrolls the
+     active tab into view; the tabs speak for themselves here */
+  .surface-strip .lbl { display: none; }
+  /* keyboard shortcuts have no fingers */
+  .status button[data-keys-open] { display: none; }
   .pane.zoom { left: 0; bottom: 45px; }
   .pane.zoom .scroll { height: 100%; overflow: auto; }
   .notch.nr button { padding: 14px 12px; margin: -14px -12px; background: none; }
